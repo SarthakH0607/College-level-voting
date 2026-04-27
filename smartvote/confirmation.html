@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartVote — Vote Confirmed</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="confirmation-page">
+    <div class="confirmation-card card animate-fade-in" style="padding:48px 36px;">
+      <div class="confirmation-icon">🎉</div>
+      <h1 style="font-size:1.8rem; margin-bottom:8px;">Vote Confirmed!</h1>
+      <p style="color:var(--text-light); margin-bottom:24px;">Your vote has been securely recorded on SmartVote.</p>
+
+      <div id="vote-summary" style="background:var(--bg); padding:20px; border-radius:var(--radius-sm); margin-bottom:24px; text-align:left;">
+        <p><strong>Election:</strong> <span id="sum-election">—</span></p>
+        <p><strong>Candidate:</strong> <span id="sum-candidate">—</span></p>
+        <p><strong>Time:</strong> <span id="sum-time">—</span></p>
+        <p><strong>Status:</strong> <span class="badge badge-success">✅ Verified</span></p>
+      </div>
+
+      <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+        <a href="index.html" class="btn btn-primary" id="back-dashboard">← Back to Dashboard</a>
+        <a href="results.html" class="btn btn-outline" id="view-results-link">View Results</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/auth-guard.js"></script>
+
+  <script>
+    const electionId = Utils.getParam('election');
+    const candidateId = Utils.getParam('candidate');
+
+    AuthGuard.protect(async (user, data) => {
+      // Adjust back link based on role
+      const dashLink = APP_CONFIG.roleDashboard[data.role] || 'index.html';
+      document.getElementById('back-dashboard').href = dashLink;
+
+      if (electionId) {
+        document.getElementById('view-results-link').href = `results.html?id=${electionId}`;
+        try {
+          const elDoc = await db.collection('elections').doc(electionId).get();
+          if (elDoc.exists) document.getElementById('sum-election').textContent = elDoc.data().title;
+        } catch(e) {}
+      }
+
+      if (candidateId) {
+        try {
+          const cDoc = await db.collection('candidates').doc(candidateId).get();
+          if (cDoc.exists) document.getElementById('sum-candidate').textContent = cDoc.data().name;
+        } catch(e) {}
+      }
+
+      document.getElementById('sum-time').textContent = new Date().toLocaleString();
+    });
+  </script>
+</body>
+</html>

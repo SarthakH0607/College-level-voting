@@ -1,0 +1,38 @@
+# Python backend
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Biometric Data (DO NOT COMMIT FACES/VOICES TO GITHUB)
+smartvote/biometric-service/data/
+smartvote/biometric-service/temp/
+*_temp.jpg
+*_verify_temp.jpg
+*.webm
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db

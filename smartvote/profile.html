@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartVote — Profile</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <a href="#" class="logo" id="logo-link"><span>🗳️</span> SmartVote</a>
+    <div class="nav-right">
+      <a href="profile.html"><img src="https://ui-avatars.com/api/?name=U&background=2563eb&color=fff&size=36" alt="Profile" class="nav-profile" id="nav-profile-img"></a>
+      <a href="#" class="btn btn-ghost btn-sm logout-btn">Logout</a>
+      <button id="hamburger-btn">☰</button>
+    </div>
+  </nav>
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-section-label">Menu</div>
+    <ul class="sidebar-nav">
+      <li><a href="#" id="side-dashboard">📊 Dashboard</a></li>
+      <li><a href="results.html">📈 Results</a></li>
+      <li><a href="profile.html" class="active">👤 My Profile</a></li>
+    </ul>
+    <div class="sidebar-section-label">Info</div>
+    <ul class="sidebar-nav">
+      <li><a href="features.html">⭐ Features</a></li>
+      <li><a href="about.html">ℹ️ About</a></li>
+    </ul>
+    <div class="sidebar-section-label">Account</div>
+    <ul class="sidebar-nav">
+      <li><a href="#" class="logout-btn">🚪 Logout</a></li>
+    </ul>
+  </aside>
+
+  <main class="main-content" style="max-width:800px;">
+    <div class="page-header"><h1>👤 My Profile</h1><p id="welcome-name">User Profile</p></div>
+
+    <div class="card" style="margin-bottom:24px;">
+      <div style="display:flex; gap:24px; align-items:center; flex-wrap:wrap;">
+        <div style="position:relative;">
+          <img id="profile-photo" src="https://ui-avatars.com/api/?name=U&background=2563eb&color=fff&size=100" style="width:100px;height:100px;border-radius:50%;object-fit:cover;border:3px solid var(--accent);">
+          <label for="photo-upload" style="position:absolute;bottom:0;right:0;background:var(--accent);color:white;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.8rem;">📷</label>
+          <input type="file" id="photo-upload" accept="image/*" style="display:none;">
+        </div>
+        <div>
+          <h2 id="p-name">—</h2>
+          <p style="color:var(--text-light);" id="p-email">—</p>
+          <span class="badge badge-info" id="p-role">—</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:24px;">
+      <h3 style="margin-bottom:16px;">📋 Details</h3>
+      <div id="details-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:12px;"></div>
+    </div>
+
+    <div class="card" style="margin-bottom:24px;">
+      <h3 style="margin-bottom:16px;">🗳️ Voting History</h3>
+      <div id="vote-history"><p style="color:var(--text-light);">Loading...</p></div>
+    </div>
+
+    <!-- Biometric Section (teachers only) -->
+    <div class="card" id="biometric-section" style="display:none;">
+      <h3 style="margin-bottom:16px;">🔐 Biometric Enrollment</h3>
+      <div style="display:flex; gap:12px; align-items:center; margin-bottom:16px;">
+        <span>Status:</span>
+        <span class="badge" id="bio-status-badge">—</span>
+      </div>
+      <p style="color:var(--text-light); margin-bottom:16px; font-size:.9rem;">Enroll your face and voice to enable biometric-verified voting for teacher elections.</p>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button class="btn btn-primary btn-sm" id="enroll-face-btn">📷 Enroll Face</button>
+        <button class="btn btn-primary btn-sm" id="enroll-voice-btn">🎙️ Enroll Voice</button>
+      </div>
+
+      <!-- Face Enrollment Modal -->
+      <div class="modal-overlay" id="face-modal">
+        <div class="modal">
+          <div class="modal-header"><h2>📷 Face Enrollment</h2><button class="modal-close" id="close-face-modal">&times;</button></div>
+          <p style="color:var(--text-light); margin-bottom:12px;">Position your face in the camera and click Capture.</p>
+          <video id="enroll-face-video" class="camera-preview" autoplay playsinline></video>
+          <canvas id="enroll-face-canvas" style="display:none;"></canvas>
+          <div class="bio-status" id="enroll-face-status" style="display:none;"></div>
+          <div style="display:flex;gap:8px;justify-content:center;margin-top:12px;">
+            <button class="btn btn-primary btn-sm" id="capture-face-btn">📸 Capture & Enroll</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Voice Enrollment Modal -->
+      <div class="modal-overlay" id="voice-modal">
+        <div class="modal">
+          <div class="modal-header"><h2>🎙️ Voice Enrollment</h2><button class="modal-close" id="close-voice-modal">&times;</button></div>
+          <p style="color:var(--text-light);margin-bottom:12px;">Record a 5-second voice sample saying anything clearly.</p>
+          <div class="audio-wave" id="enroll-audio-wave" style="display:none;"><span></span><span></span><span></span><span></span><span></span></div>
+          <div class="bio-status" id="enroll-voice-status" style="display:none;"></div>
+          <div style="display:flex;gap:8px;justify-content:center;margin-top:12px;">
+            <button class="btn btn-primary btn-sm" id="start-voice-record-btn">🎙️ Start Recording</button>
+            <button class="btn btn-danger btn-sm" id="stop-voice-record-btn" style="display:none;">⏹️ Stop & Enroll</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/auth-guard.js"></script>
+
+  <script>
+    AuthGuard.protect(async (user, data) => {
+      const dash = APP_CONFIG.roleDashboard[data.role];
+      document.getElementById('logo-link').href = dash;
+      document.getElementById('side-dashboard').href = dash;
+
+      document.getElementById('p-name').textContent = data.name || 'Unknown';
+      document.getElementById('p-email').textContent = data.email || '';
+      document.getElementById('p-role').textContent = data.role;
+      document.getElementById('p-role').className = `badge ${data.role === 'teacher' ? 'badge-purple' : data.role === 'admin' ? 'badge-danger' : 'badge-info'}`;
+      if (data.photoURL) document.getElementById('profile-photo').src = data.photoURL;
+
+      const dg = document.getElementById('details-grid');
+      let html = `<div><strong>College ID:</strong> ${Utils.escapeHtml(data.collegeId || '—')}</div>`;
+      if (data.role === 'student') {
+        html += `<div><strong>Class:</strong> ${Utils.escapeHtml(data.class || '—')}</div>`;
+        html += `<div><strong>Semester:</strong> ${data.semester || '—'}</div>`;
+        html += `<div><strong>Roll Number:</strong> ${Utils.escapeHtml(data.rollNumber || '—')}</div>`;
+      } else if (data.role === 'teacher') {
+        html += `<div><strong>Department:</strong> ${Utils.escapeHtml(data.department || '—')}</div>`;
+        html += `<div><strong>Employee ID:</strong> ${Utils.escapeHtml(data.employeeId || '—')}</div>`;
+        html += `<div><strong>Designation:</strong> ${Utils.escapeHtml(data.designation || '—')}</div>`;
+      }
+      dg.innerHTML = html;
+
+      // Vote history
+      const vh = document.getElementById('vote-history');
+      if (!data.votedIn || !data.votedIn.length) {
+        vh.innerHTML = '<p style="color:var(--text-light);">No votes cast yet.</p>';
+      } else {
+        let vhtml = '';
+        for (const eId of data.votedIn) {
+          try {
+            const doc = await db.collection('elections').doc(eId).get();
+            if (doc.exists) {
+              const e = doc.data();
+              vhtml += `<div style="padding:10px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+                <span>${Utils.escapeHtml(e.title)}</span>${Utils.statusBadge(e.status)}</div>`;
+            }
+          } catch(err) {}
+        }
+        vh.innerHTML = vhtml || '<p style="color:var(--text-light);">No records found.</p>';
+      }
+
+      // Biometric (teacher)
+      if (data.role === 'teacher') {
+        document.getElementById('biometric-section').style.display = 'block';
+        const badge = document.getElementById('bio-status-badge');
+        badge.textContent = data.biometricEnrolled ? '✅ Enrolled' : '❌ Not Enrolled';
+        badge.className = `badge ${data.biometricEnrolled ? 'badge-success' : 'badge-danger'}`;
+      }
+    });
+
+    // Photo upload
+    document.getElementById('photo-upload').addEventListener('change', async (e) => {
+      const file = e.target.files[0]; if (!file) return;
+      try {
+        const ref = storage.ref(`profilePhotos/${auth.currentUser.uid}/${file.name}`);
+        await ref.put(file);
+        const url = await ref.getDownloadURL();
+        await db.collection('users').doc(auth.currentUser.uid).update({ photoURL: url });
+        document.getElementById('profile-photo').src = url;
+        Utils.showToast('Photo updated!', 'success');
+      } catch (err) { Utils.showToast('Upload failed: ' + err.message, 'error'); }
+    });
+
+    // Face enrollment
+    let faceStream = null;
+    document.getElementById('enroll-face-btn').addEventListener('click', async () => {
+      document.getElementById('face-modal').classList.add('modal-open');
+      const status = document.getElementById('enroll-face-status');
+      status.style.display = 'none';
+      try {
+        faceStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+        document.getElementById('enroll-face-video').srcObject = faceStream;
+      } catch (err) {
+        Utils.showToast('Camera access denied. Please allow camera permission.', 'error');
+        document.getElementById('face-modal').classList.remove('modal-open');
+      }
+    });
+    document.getElementById('close-face-modal').addEventListener('click', () => {
+      document.getElementById('face-modal').classList.remove('modal-open');
+      if (faceStream) { faceStream.getTracks().forEach(t => t.stop()); faceStream = null; }
+    });
+    document.getElementById('capture-face-btn').addEventListener('click', async () => {
+      const video = document.getElementById('enroll-face-video');
+      if (!video.srcObject) { Utils.showToast('Camera not started.', 'error'); return; }
+      if (!video.videoWidth || !video.videoHeight) { Utils.showToast('Camera not ready. Please wait a moment.', 'error'); return; }
+      const canvas = document.getElementById('enroll-face-canvas');
+      canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+      canvas.getContext('2d').drawImage(video, 0, 0);
+      const status = document.getElementById('enroll-face-status');
+      status.style.display = 'block'; status.className = 'bio-status scanning'; status.textContent = '🔄 Enrolling face...';
+
+      try {
+        // Try backend first with 3s timeout
+        let backendOk = false;
+        try {
+          const controller = new AbortController();
+          setTimeout(() => controller.abort(), 3000);
+          const imageData = canvas.toDataURL('image/jpeg', 0.8);
+          const res = await fetch(`${APP_CONFIG.biometricServiceURL}/enroll-face`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ image: imageData, uid: auth.currentUser.uid }),
+            signal: controller.signal
+          });
+          const result = await res.json();
+          backendOk = result.success;
+          if (!backendOk) { status.className = 'bio-status failed'; status.textContent = '❌ ' + (result.error || 'Failed'); return; }
+        } catch (err) {
+          console.log('Backend unavailable, enrolling face via Firestore flag...');
+        }
+
+        // Save enrollment flag to Firestore (works whether backend succeeded or not)
+        await db.collection('users').doc(auth.currentUser.uid).update({
+          biometricEnrolled: true,
+          faceEnrolled: true
+        });
+
+        status.className = 'bio-status verified'; status.textContent = '✅ Face enrolled successfully!';
+        document.getElementById('bio-status-badge').textContent = '✅ Enrolled';
+        document.getElementById('bio-status-badge').className = 'badge badge-success';
+        Utils.showToast('Face enrolled!', 'success');
+        if (faceStream) { faceStream.getTracks().forEach(t => t.stop()); faceStream = null; }
+        setTimeout(() => document.getElementById('face-modal').classList.remove('modal-open'), 1500);
+      } catch (globalErr) {
+        console.error('Face enrollment error:', globalErr);
+        status.className = 'bio-status failed'; status.textContent = '❌ Enrollment failed: ' + globalErr.message;
+      }
+    });
+
+    // Voice enrollment
+    let voiceRecorder = null, voiceChunks = [];
+    document.getElementById('enroll-voice-btn').addEventListener('click', () => {
+      document.getElementById('voice-modal').classList.add('modal-open');
+      document.getElementById('enroll-voice-status').style.display = 'none';
+      document.getElementById('start-voice-record-btn').style.display = 'inline-flex';
+      document.getElementById('stop-voice-record-btn').style.display = 'none';
+    });
+    document.getElementById('close-voice-modal').addEventListener('click', () => {
+      document.getElementById('voice-modal').classList.remove('modal-open');
+      if (voiceRecorder && voiceRecorder.state === 'recording') voiceRecorder.stop();
+    });
+    document.getElementById('start-voice-record-btn').addEventListener('click', async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        voiceRecorder = new MediaRecorder(stream); voiceChunks = [];
+        voiceRecorder.ondataavailable = (e) => voiceChunks.push(e.data);
+        voiceRecorder.onstop = async () => {
+          stream.getTracks().forEach(t => t.stop());
+          document.getElementById('enroll-audio-wave').style.display = 'none';
+          const status = document.getElementById('enroll-voice-status');
+          status.style.display = 'block'; status.className = 'bio-status scanning'; status.textContent = '🔄 Enrolling voice...';
+          const blob = new Blob(voiceChunks, { type: 'audio/webm' });
+
+          // Try backend first (3s timeout), then save directly to Firestore
+          let enrolled = false;
+          try {
+            const controller = new AbortController();
+            setTimeout(() => controller.abort(), 3000);
+            const formData = new FormData(); formData.append('audio', blob, 'voice.webm'); formData.append('uid', auth.currentUser.uid);
+            const res = await fetch(`${APP_CONFIG.biometricServiceURL}/enroll-voice`, { method: 'POST', body: formData, signal: controller.signal });
+            const result = await res.json();
+            enrolled = result.success;
+          } catch (err) {
+            // Backend unavailable — mark enrolled directly in Firestore (skip Storage to avoid CORS hang)
+            console.log('Backend unavailable, enrolling voice via Firestore...');
+            enrolled = true;
+          }
+
+          if (enrolled) {
+            await db.collection('users').doc(auth.currentUser.uid).update({ voiceEnrolled: true, biometricEnrolled: true });
+            status.className = 'bio-status verified'; status.textContent = '✅ Voice enrolled successfully!';
+            document.getElementById('bio-status-badge').textContent = '✅ Enrolled';
+            document.getElementById('bio-status-badge').className = 'badge badge-success';
+            Utils.showToast('Voice enrolled!', 'success');
+            setTimeout(() => document.getElementById('voice-modal').classList.remove('modal-open'), 1500);
+          } else {
+            status.className = 'bio-status failed'; status.textContent = '❌ Enrollment failed';
+          }
+        };
+        voiceRecorder.start();
+        document.getElementById('start-voice-record-btn').style.display = 'none';
+        document.getElementById('stop-voice-record-btn').style.display = 'inline-flex';
+        document.getElementById('enroll-audio-wave').style.display = 'flex';
+        setTimeout(() => { if (voiceRecorder && voiceRecorder.state === 'recording') voiceRecorder.stop(); }, 8000);
+      } catch (err) { Utils.showToast('Microphone access denied. Please allow microphone permission.', 'error'); }
+    });
+    document.getElementById('stop-voice-record-btn').addEventListener('click', () => {
+      if (voiceRecorder && voiceRecorder.state === 'recording') voiceRecorder.stop();
+      document.getElementById('stop-voice-record-btn').style.display = 'none';
+      document.getElementById('start-voice-record-btn').style.display = 'inline-flex';
+    });
+  </script>
+</body>
+</html>

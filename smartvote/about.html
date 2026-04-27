@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartVote — About</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <a href="#" class="logo" id="logo-link"><span>🗳️</span> SmartVote</a>
+    <div class="nav-right">
+      <a href="profile.html"><img src="https://ui-avatars.com/api/?name=U&background=2563eb&color=fff&size=36" alt="Profile" class="nav-profile" id="nav-profile-img"></a>
+      <a href="#" class="btn btn-ghost btn-sm logout-btn">Logout</a>
+      <button id="hamburger-btn">☰</button>
+    </div>
+  </nav>
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-section-label">Menu</div>
+    <ul class="sidebar-nav">
+      <li><a href="#" id="side-dashboard">📊 Dashboard</a></li>
+      <li><a href="results.html">📈 Results</a></li>
+      <li><a href="profile.html">👤 My Profile</a></li>
+    </ul>
+    <div class="sidebar-section-label">Info</div>
+    <ul class="sidebar-nav">
+      <li><a href="features.html">⭐ Features</a></li>
+      <li><a href="about.html" class="active">ℹ️ About</a></li>
+    </ul>
+    <div class="sidebar-section-label">Account</div>
+    <ul class="sidebar-nav">
+      <li><a href="#" class="logout-btn">🚪 Logout</a></li>
+    </ul>
+  </aside>
+
+  <main class="main-content" style="max-width:800px;">
+    <div class="page-header"><h1>ℹ️ About SmartVote</h1><p>Secure, fair, and transparent college elections</p></div>
+
+    <div class="card animate-fade-in" style="margin-bottom:24px;">
+      <h2 style="margin-bottom:12px;">Our Mission</h2>
+      <p style="color:var(--text-light); line-height:1.8;">SmartVote is a next-generation digital voting platform designed specifically for college elections. Our mission is to make the democratic process within educational institutions more secure, accessible, and transparent. By leveraging modern web technologies and biometric verification, we ensure that every vote counts and every election is fair.</p>
+    </div>
+
+    <div class="card animate-fade-in" style="margin-bottom:24px;">
+      <h2 style="margin-bottom:12px;">How It Works</h2>
+      <div style="display:grid; gap:16px; margin-top:16px;">
+        <div style="display:flex; gap:12px; align-items:start;"><span style="font-size:1.5rem;">1️⃣</span><div><h4>Register & Verify</h4><p style="color:var(--text-light);">Students and teachers register with their college credentials. Teachers complete biometric enrollment for face and voice.</p></div></div>
+        <div style="display:flex; gap:12px; align-items:start;"><span style="font-size:1.5rem;">2️⃣</span><div><h4>Browse Elections</h4><p style="color:var(--text-light);">View active elections on your role-specific dashboard. Filter by status and see candidates per position.</p></div></div>
+        <div style="display:flex; gap:12px; align-items:start;"><span style="font-size:1.5rem;">3️⃣</span><div><h4>Cast Your Vote</h4><p style="color:var(--text-light);">Students vote per position (CR, Vice CR, etc.). Teachers undergo face + voice verification before voting.</p></div></div>
+        <div style="display:flex; gap:12px; align-items:start;"><span style="font-size:1.5rem;">4️⃣</span><div><h4>View Results</h4><p style="color:var(--text-light);">Watch results update in real-time with live progress bars and vote counts per position.</p></div></div>
+      </div>
+    </div>
+
+    <div class="card animate-fade-in">
+      <h2 style="margin-bottom:12px;">Technology</h2>
+      <p style="color:var(--text-light); margin-bottom:12px;">Built with modern, reliable technologies:</p>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <span class="badge badge-info">Firebase Auth</span><span class="badge badge-info">Cloud Firestore</span><span class="badge badge-info">Firebase Storage</span>
+        <span class="badge badge-purple">InsightFace AI</span><span class="badge badge-purple">Canary-Qwen 2.5B</span><span class="badge badge-success">Real-time Sync</span>
+      </div>
+    </div>
+  </main>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/auth-guard.js"></script>
+  <script>
+    AuthGuard.protect((user, data) => {
+      const dash = APP_CONFIG.roleDashboard[data.role];
+      document.getElementById('logo-link').href = dash;
+      document.getElementById('side-dashboard').href = dash;
+    });
+  </script>
+</body>
+</html>

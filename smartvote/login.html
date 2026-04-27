@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartVote — Login</title>
+  <meta name="description" content="Login to SmartVote college voting platform">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="auth-page">
+    <div class="auth-container animate-fade-in">
+      <div class="auth-card">
+        <div class="auth-logo">
+          <h1>🗳️ SmartVote</h1>
+          <p>College Online Voting Platform</p>
+        </div>
+
+        <!-- Role Toggle -->
+        <div class="role-toggle" id="role-toggle">
+          <button class="role-toggle-btn active" data-role="student" id="toggle-student">🎓 Student</button>
+          <button class="role-toggle-btn" data-role="teacher" id="toggle-teacher">👨‍🏫 Teacher</button>
+          <button class="role-toggle-btn" data-role="admin" id="toggle-admin">🛡️ Admin</button>
+        </div>
+
+        <form id="login-form" autocomplete="on">
+          <div class="form-group">
+            <label class="form-label" for="email">Email Address</label>
+            <input type="email" id="email" class="form-input" placeholder="you@college.edu" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="password">Password</label>
+            <input type="password" id="password" class="form-input" placeholder="Enter your password" required>
+          </div>
+          <div style="text-align:right; margin-bottom:16px;">
+            <a href="#" id="forgot-password-link" style="font-size:.85rem;">Forgot Password?</a>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block btn-lg" id="login-btn">Sign In</button>
+        </form>
+
+        <div class="divider">or</div>
+
+        <button class="btn btn-google" id="google-login-btn">
+          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google"> Continue with Google
+        </button>
+
+        <p style="text-align:center; margin-top:20px; font-size:.9rem; color:var(--text-light);">
+          Don't have an account? <a href="register.html">Register here</a>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/utils.js"></script>
+
+  <script>
+    // If already logged in, redirect
+    auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        try {
+          const doc = await db.collection('users').doc(user.uid).get();
+          if (doc.exists) {
+            const role = doc.data().role;
+            window.location.href = APP_CONFIG.roleDashboard[role] || 'index.html';
+          }
+        } catch (e) { /* proceed to login */ }
+      }
+    });
+
+    let selectedRole = 'student';
+
+    // Role toggle
+    document.querySelectorAll('.role-toggle-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.role-toggle-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        selectedRole = btn.dataset.role;
+        // Update accent
+        const colors = { student: '#2563eb, #7c3aed', teacher: '#7c3aed, #a78bfa', admin: '#1e293b, #475569' };
+        document.querySelector('.auth-logo h1').style.background = `linear-gradient(135deg, ${colors[selectedRole] || colors.student})`;
+        document.querySelector('.auth-logo h1').style.webkitBackgroundClip = 'text';
+        document.querySelector('.auth-logo h1').style.webkitTextFillColor = 'transparent';
+      });
+    });
+
+    // Email/Password Login
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('login-btn');
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+
+      Utils.setLoading(btn, true);
+
+      try {
+        const cred = await auth.signInWithEmailAndPassword(email, password);
+        const userDoc = await db.collection('users').doc(cred.user.uid).get();
+
+        if (!userDoc.exists) {
+          Utils.showToast('User profile not found. Please register.', 'error');
+          Utils.setLoading(btn, false, 'Sign In');
+          return;
+        }
+
+        const role = userDoc.data().role;
+        if (role !== selectedRole && selectedRole !== 'admin') {
+          Utils.showToast(`This account is registered as "${role}". Switching...`, 'warning');
+        }
+
+        Utils.showToast('Login successful!', 'success');
+        setTimeout(() => {
+          window.location.href = APP_CONFIG.roleDashboard[role] || 'index.html';
+        }, 600);
+      } catch (err) {
+        let msg = 'Login failed.';
+        if (err.code === 'auth/user-not-found') msg = 'No account found with this email.';
+        else if (err.code === 'auth/wrong-password') msg = 'Incorrect password.';
+        else if (err.code === 'auth/invalid-email') msg = 'Invalid email address.';
+        else if (err.code === 'auth/too-many-requests') msg = 'Too many attempts. Try later.';
+        else msg = err.message;
+        Utils.showToast(msg, 'error');
+        Utils.setLoading(btn, false, 'Sign In');
+      }
+    });
+
+    // Google Login
+    document.getElementById('google-login-btn').addEventListener('click', async () => {
+      const btn = document.getElementById('google-login-btn');
+      Utils.setLoading(btn, true);
+
+      try {
+        const result = await auth.signInWithPopup(googleProvider);
+        const user = result.user;
+        const userDoc = await db.collection('users').doc(user.uid).get();
+
+        if (userDoc.exists) {
+          const role = userDoc.data().role;
+          Utils.showToast('Welcome back!', 'success');
+          setTimeout(() => {
+            window.location.href = APP_CONFIG.roleDashboard[role] || 'index.html';
+          }, 600);
+        } else {
+          // New Google user — create profile as student by default
+          await db.collection('users').doc(user.uid).set({
+            name: user.displayName || '',
+            email: user.email,
+            photoURL: user.photoURL || '',
+            role: selectedRole,
+            collegeId: '',
+            votedIn: [],
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+          Utils.showToast('Account created! Please complete your profile.', 'success');
+          setTimeout(() => {
+            window.location.href = APP_CONFIG.roleDashboard[selectedRole];
+          }, 600);
+        }
+      } catch (err) {
+        Utils.showToast('Google sign-in failed: ' + err.message, 'error');
+        Utils.setLoading(btn, false, '<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" style="width:20px;height:20px"> Continue with Google');
+      }
+    });
+
+    // Forgot Password
+    document.getElementById('forgot-password-link').addEventListener('click', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('email').value.trim();
+      if (!email) {
+        Utils.showToast('Enter your email first, then click Forgot Password.', 'warning');
+        return;
+      }
+      try {
+        await auth.sendPasswordResetEmail(email);
+        Utils.showToast('Password reset email sent! Check your inbox.', 'success');
+      } catch (err) {
+        Utils.showToast('Error: ' + err.message, 'error');
+      }
+    });
+  </script>
+</body>
+</html>

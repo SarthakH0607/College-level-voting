@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartVote — Election Results</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <a href="#" class="logo" id="logo-link"><span>🗳️</span> SmartVote</a>
+    <div class="nav-right">
+      <a href="profile.html"><img src="https://ui-avatars.com/api/?name=U&background=2563eb&color=fff&size=36" alt="Profile" class="nav-profile" id="nav-profile-img"></a>
+      <a href="#" class="btn btn-ghost btn-sm logout-btn">Logout</a>
+      <button id="hamburger-btn">☰</button>
+    </div>
+  </nav>
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-section-label">Menu</div>
+    <ul class="sidebar-nav">
+      <li><a href="#" id="side-dashboard">📊 Dashboard</a></li>
+      <li><a href="results.html" class="active">📈 Results</a></li>
+      <li><a href="profile.html">👤 My Profile</a></li>
+    </ul>
+    <div class="sidebar-section-label">Info</div>
+    <ul class="sidebar-nav">
+      <li><a href="features.html">⭐ Features</a></li>
+      <li><a href="about.html">ℹ️ About</a></li>
+    </ul>
+    <div class="sidebar-section-label">Account</div>
+    <ul class="sidebar-nav">
+      <li><a href="#" class="logout-btn">🚪 Logout</a></li>
+    </ul>
+  </aside>
+
+  <main class="main-content">
+    <div class="page-header">
+      <h1>📊 Election Results</h1>
+      <p>Real-time vote counts and standings</p>
+    </div>
+
+    <div class="filter-tabs" id="type-tabs">
+      <button class="filter-tab active" data-type="student">🎓 Student Elections</button>
+      <button class="filter-tab" data-type="teacher">👨‍🏫 Teacher Elections</button>
+    </div>
+
+    <div class="form-group" style="max-width:400px; margin-bottom:24px;">
+      <select class="form-input" id="election-select">
+        <option value="">— Select an election —</option>
+      </select>
+    </div>
+
+    <div id="results-area">
+      <div class="empty-state"><div class="empty-icon">📊</div><h3>Select an election to view results</h3></div>
+    </div>
+
+    <div style="margin-top:24px; display:flex; gap:8px;">
+      <button class="btn btn-outline btn-sm" id="print-btn" style="display:none;" onclick="window.print()">🖨️ Print</button>
+      <button class="btn btn-outline btn-sm" id="share-btn" style="display:none;" onclick="navigator.clipboard.writeText(window.location.href).then(()=>Utils.showToast('Link copied!','success'))">🔗 Share</button>
+    </div>
+  </main>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/auth-guard.js"></script>
+
+  <script>
+    let currentType = 'student';
+    let unsubResults = null;
+
+    AuthGuard.protect((user, data) => {
+      const dash = APP_CONFIG.roleDashboard[data.role];
+      document.getElementById('logo-link').href = dash;
+      document.getElementById('side-dashboard').href = dash;
+      const specificId = Utils.getParam('id');
+      loadElections(currentType, specificId);
+    });
+
+    document.querySelectorAll('#type-tabs .filter-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('#type-tabs .filter-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        currentType = tab.dataset.type;
+        loadElections(currentType);
+      });
+    });
+
+    async function loadElections(type, selectId) {
+      const snap = await db.collection('elections').where('type', '==', type).get();
+      const sel = document.getElementById('election-select');
+      sel.innerHTML = '<option value="">— Select an election —</option>';
+      snap.forEach(doc => {
+        const e = doc.data();
+        const opt = document.createElement('option');
+        opt.value = doc.id;
+        opt.textContent = `${e.title} (${e.status})`;
+        sel.appendChild(opt);
+      });
+      if (selectId) { sel.value = selectId; showResults(selectId); }
+    }
+
+    document.getElementById('election-select').addEventListener('change', (e) => {
+      if (e.target.value) showResults(e.target.value);
+      else document.getElementById('results-area').innerHTML = '<div class="empty-state"><div class="empty-icon">📊</div><h3>Select an election</h3></div>';
+    });
+
+    function showResults(electionId) {
+      if (unsubResults) unsubResults();
+      unsubResults = db.collection('candidates').where('electionId', '==', electionId)
+        .onSnapshot((snap) => {
+          const area = document.getElementById('results-area');
+          if (snap.empty) { area.innerHTML = '<div class="empty-state"><h3>No candidates found</h3></div>'; return; }
+
+          // Group by position
+          let byPosition = {};
+          let totalVotes = 0;
+          snap.forEach(doc => {
+            const c = { id: doc.id, ...doc.data() };
+            const pos = c.position || 'General';
+            if (!byPosition[pos]) byPosition[pos] = [];
+            byPosition[pos].push(c);
+            totalVotes += (c.votes || 0);
+          });
+
+          let html = `<div class="card" style="margin-bottom:16px;padding:16px 20px;">
+            <p style="font-weight:600;">Total Votes Cast: <span style="color:var(--accent); font-size:1.2rem;">${totalVotes}</span></p>
+          </div>`;
+
+          for (const [position, candidates] of Object.entries(byPosition)) {
+            candidates.sort((a, b) => (b.votes || 0) - (a.votes || 0));
+            const posTotal = candidates.reduce((s, c) => s + (c.votes || 0), 0);
+
+            html += `<div class="position-section">
+              <h2><span class="position-badge">${Utils.escapeHtml(position)}</span> ${posTotal} votes</h2>`;
+
+            candidates.forEach((c, i) => {
+              const pct = posTotal > 0 ? ((c.votes || 0) / posTotal * 100) : 0;
+              const medal = i === 0 && posTotal > 0 ? '🥇 ' : i === 1 ? '🥈 ' : i === 2 ? '🥉 ' : '';
+              html += `<div class="result-bar-container animate-fade-in">
+                <div class="result-bar-header">
+                  <span class="result-bar-name">${medal}${Utils.escapeHtml(c.name)}</span>
+                  <span class="result-bar-votes">${c.votes || 0} votes (${pct.toFixed(1)}%)</span>
+                </div>
+                <div class="result-bar">
+                  <div class="result-bar-fill" style="width:${Math.max(pct, 2)}%">${pct.toFixed(0)}%</div>
+                </div>
+              </div>`;
+            });
+            html += '</div>';
+          }
+
+          area.innerHTML = html;
+          document.getElementById('print-btn').style.display = 'inline-flex';
+          document.getElementById('share-btn').style.display = 'inline-flex';
+        });
+    }
+  </script>
+</body>
+</html>

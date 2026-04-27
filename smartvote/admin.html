@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en" data-role="admin">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartVote — Admin Panel</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <a href="admin.html" class="logo"><span>🗳️</span> SmartVote <span class="badge badge-danger" style="font-size:.65rem;">ADMIN</span></a>
+    <div class="nav-right">
+      <a href="#" class="btn btn-ghost btn-sm logout-btn">Logout</a>
+      <button id="hamburger-btn">☰</button>
+    </div>
+  </nav>
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-section-label">Management</div>
+    <ul class="sidebar-nav">
+      <li><a href="admin.html" class="active">⚙️ Admin Panel</a></li>
+      <li><a href="results.html">📈 Results</a></li>
+    </ul>
+    <div class="sidebar-section-label">Info</div>
+    <ul class="sidebar-nav">
+      <li><a href="features.html">⭐ Features</a></li>
+      <li><a href="about.html">ℹ️ About</a></li>
+    </ul>
+    <div class="sidebar-section-label">Account</div>
+    <ul class="sidebar-nav">
+      <li><a href="#" class="logout-btn">🚪 Logout</a></li>
+    </ul>
+  </aside>
+
+  <main class="main-content">
+    <div class="page-header"><h1>⚙️ Admin Panel</h1><p>Manage elections, candidates, and users</p></div>
+
+    <div class="stats-grid" id="admin-stats">
+      <div class="stat-card"><div class="stat-value" id="s-elections">0</div><div class="stat-label">Elections</div></div>
+      <div class="stat-card"><div class="stat-value" id="s-candidates">0</div><div class="stat-label">Candidates</div></div>
+      <div class="stat-card"><div class="stat-value" id="s-users">0</div><div class="stat-label">Users</div></div>
+      <div class="stat-card"><div class="stat-value" id="s-votes">0</div><div class="stat-label">Total Votes</div></div>
+    </div>
+
+    <div class="admin-tabs">
+      <button class="admin-tab active" data-tab="elections">Elections</button>
+      <button class="admin-tab" data-tab="candidates">Candidates</button>
+      <button class="admin-tab" data-tab="users">Users</button>
+    </div>
+
+    <!-- Elections Section -->
+    <div class="admin-section active" id="section-elections">
+      <button class="btn btn-primary btn-sm" id="add-election-btn" style="margin-bottom:16px;">+ Create Election</button>
+      <div id="election-form-area" style="display:none;" class="card" style="margin-bottom:16px;">
+        <h3 id="el-form-title" style="margin-bottom:16px;">Create Election</h3>
+        <form id="election-form">
+          <input type="hidden" id="el-id">
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Title</label><input type="text" id="el-title" class="form-input" required></div>
+            <div class="form-group"><label class="form-label">Type</label>
+              <select id="el-type" class="form-input"><option value="student">Student</option><option value="teacher">Teacher</option></select>
+            </div>
+          </div>
+          <div class="form-group"><label class="form-label">Description</label><textarea id="el-desc" class="form-input"></textarea></div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Start Date</label><input type="datetime-local" id="el-start" class="form-input" required></div>
+            <div class="form-group"><label class="form-label">End Date</label><input type="datetime-local" id="el-end" class="form-input" required></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Status</label>
+              <select id="el-status" class="form-input"><option value="upcoming">Upcoming</option><option value="active">Active</option><option value="closed">Closed</option></select>
+            </div>
+            <div class="form-group" style="display:flex;align-items:end;gap:8px;">
+              <label><input type="checkbox" id="el-biometric"> Require Biometric</label>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:12px;">
+            <button type="submit" class="btn btn-primary btn-sm" id="el-save-btn">Save</button>
+            <button type="button" class="btn btn-ghost btn-sm" onclick="document.getElementById('election-form-area').style.display='none'">Cancel</button>
+          </div>
+        </form>
+      </div>
+      <div class="table-wrapper"><table id="elections-table"><thead><tr><th>Title</th><th>Type</th><th>Status</th><th>Votes</th><th>Actions</th></tr></thead><tbody></tbody></table></div>
+    </div>
+
+    <!-- Candidates Section -->
+    <div class="admin-section" id="section-candidates">
+      <button class="btn btn-primary btn-sm" id="add-candidate-btn" style="margin-bottom:16px;">+ Add Candidate</button>
+      <div id="candidate-form-area" style="display:none;" class="card" style="margin-bottom:16px;">
+        <h3 style="margin-bottom:16px;">Add Candidate</h3>
+        <form id="candidate-form">
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Name</label><input type="text" id="c-name" class="form-input" required></div>
+            <div class="form-group"><label class="form-label">Position</label><input type="text" id="c-position" class="form-input" placeholder="e.g. CR, Vice CR" required></div>
+          </div>
+          <div class="form-group"><label class="form-label">Election</label>
+            <select id="c-election" class="form-input" required><option value="">Select Election</option></select>
+          </div>
+          <div class="form-group"><label class="form-label">Manifesto</label><textarea id="c-manifesto" class="form-input"></textarea></div>
+          <div class="form-group"><label class="form-label">Photo URL</label><input type="text" id="c-photo" class="form-input" placeholder="https://..."></div>
+          <div style="display:flex;gap:8px;margin-top:12px;">
+            <button type="submit" class="btn btn-primary btn-sm">Save Candidate</button>
+            <button type="button" class="btn btn-ghost btn-sm" onclick="document.getElementById('candidate-form-area').style.display='none'">Cancel</button>
+          </div>
+        </form>
+      </div>
+      <div class="table-wrapper"><table id="candidates-table"><thead><tr><th>Name</th><th>Position</th><th>Election</th><th>Votes</th><th>Actions</th></tr></thead><tbody></tbody></table></div>
+    </div>
+
+    <!-- Users Section -->
+    <div class="admin-section" id="section-users">
+      <div class="filter-tabs" style="margin-bottom:16px;">
+        <button class="filter-tab active" data-urole="all">All</button>
+        <button class="filter-tab" data-urole="student">Students</button>
+        <button class="filter-tab" data-urole="teacher">Teachers</button>
+        <button class="filter-tab" data-urole="admin">Admins</button>
+      </div>
+      <div class="table-wrapper"><table id="users-table"><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>College ID</th><th>Actions</th></tr></thead><tbody></tbody></table></div>
+    </div>
+  </main>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/auth-guard.js"></script>
+
+  <script>
+    let elections = [], candidates = [], users = [];
+    let userRoleFilter = 'all';
+
+    AuthGuard.protect(() => {
+      loadAll();
+    });
+
+    // Tabs
+    document.querySelectorAll('.admin-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
+        document.getElementById('section-' + tab.dataset.tab).classList.add('active');
+      });
+    });
+
+    async function loadAll() {
+      // Elections
+      db.collection('elections').onSnapshot(snap => {
+        elections = [];
+        snap.forEach(d => elections.push({ id: d.id, ...d.data() }));
+        document.getElementById('s-elections').textContent = elections.length;
+        renderElections();
+        populateElectionSelect();
+      });
+      // Candidates
+      db.collection('candidates').onSnapshot(snap => {
+        candidates = [];
+        snap.forEach(d => candidates.push({ id: d.id, ...d.data() }));
+        document.getElementById('s-candidates').textContent = candidates.length;
+        renderCandidates();
+      });
+      // Users
+      db.collection('users').onSnapshot(snap => {
+        users = [];
+        snap.forEach(d => users.push({ id: d.id, ...d.data() }));
+        document.getElementById('s-users').textContent = users.length;
+        renderUsers();
+      });
+      // Votes count
+      db.collection('votes').onSnapshot(snap => {
+        document.getElementById('s-votes').textContent = snap.size;
+      });
+    }
+
+    function renderElections() {
+      const tbody = document.querySelector('#elections-table tbody');
+      tbody.innerHTML = elections.map(e => `<tr>
+        <td>${Utils.escapeHtml(e.title)}</td>
+        <td><span class="badge ${e.type === 'teacher' ? 'badge-purple' : 'badge-info'}">${e.type}</span></td>
+        <td>${Utils.statusBadge(e.status)}</td>
+        <td>${e.totalVotes || 0}</td>
+        <td>
+          <button class="btn btn-ghost btn-sm" onclick="editElection('${e.id}')">✏️</button>
+          <button class="btn btn-ghost btn-sm" onclick="deleteElection('${e.id}')">🗑️</button>
+        </td>
+      </tr>`).join('');
+    }
+
+    function renderCandidates() {
+      const tbody = document.querySelector('#candidates-table tbody');
+      tbody.innerHTML = candidates.map(c => {
+        const el = elections.find(e => e.id === c.electionId);
+        return `<tr>
+          <td>${Utils.escapeHtml(c.name)}</td>
+          <td>${Utils.escapeHtml(c.position || '')}</td>
+          <td>${el ? Utils.escapeHtml(el.title) : c.electionId}</td>
+          <td>${c.votes || 0}</td>
+          <td><button class="btn btn-ghost btn-sm" onclick="deleteCandidate('${c.id}')">🗑️</button></td>
+        </tr>`;
+      }).join('');
+    }
+
+    function renderUsers() {
+      const filtered = userRoleFilter === 'all' ? users : users.filter(u => u.role === userRoleFilter);
+      const tbody = document.querySelector('#users-table tbody');
+      tbody.innerHTML = filtered.map(u => `<tr>
+        <td>${Utils.escapeHtml(u.name || '')}</td>
+        <td>${Utils.escapeHtml(u.email || '')}</td>
+        <td><span class="badge ${u.role === 'teacher' ? 'badge-purple' : u.role === 'admin' ? 'badge-danger' : 'badge-info'}">${u.role}</span></td>
+        <td>${Utils.escapeHtml(u.collegeId || '')}</td>
+        <td>${u.role === 'teacher' ? `<button class="btn btn-ghost btn-sm" onclick="resetBiometric('${u.id}')">🔄 Reset Bio</button>` : ''}</td>
+      </tr>`).join('');
+    }
+
+    // User role filter
+    document.querySelectorAll('[data-urole]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('[data-urole]').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        userRoleFilter = btn.dataset.urole;
+        renderUsers();
+      });
+    });
+
+    // Election form
+    document.getElementById('add-election-btn').addEventListener('click', () => {
+      document.getElementById('el-id').value = '';
+      document.getElementById('election-form').reset();
+      document.getElementById('el-form-title').textContent = 'Create Election';
+      document.getElementById('election-form-area').style.display = 'block';
+    });
+
+    document.getElementById('election-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('el-id').value;
+      const data = {
+        title: document.getElementById('el-title').value.trim(),
+        type: document.getElementById('el-type').value,
+        description: document.getElementById('el-desc').value.trim(),
+        status: document.getElementById('el-status').value,
+        startDate: new Date(document.getElementById('el-start').value),
+        endDate: new Date(document.getElementById('el-end').value),
+        requiresBiometric: document.getElementById('el-biometric').checked,
+        totalVotes: 0
+      };
+      try {
+        if (id) { await db.collection('elections').doc(id).update(data); Utils.showToast('Election updated!', 'success'); }
+        else { await db.collection('elections').add(data); Utils.showToast('Election created!', 'success'); }
+        document.getElementById('election-form-area').style.display = 'none';
+      } catch (err) { Utils.showToast('Error: ' + err.message, 'error'); }
+    });
+
+    window.editElection = (id) => {
+      const e = elections.find(el => el.id === id);
+      if (!e) return;
+      document.getElementById('el-id').value = id;
+      document.getElementById('el-title').value = e.title || '';
+      document.getElementById('el-type').value = e.type || 'student';
+      document.getElementById('el-desc').value = e.description || '';
+      document.getElementById('el-status').value = e.status || 'upcoming';
+      document.getElementById('el-biometric').checked = e.requiresBiometric || false;
+      if (e.startDate) {
+        const sd = e.startDate.toDate ? e.startDate.toDate() : new Date(e.startDate);
+        document.getElementById('el-start').value = sd.toISOString().slice(0, 16);
+      }
+      if (e.endDate) {
+        const ed = e.endDate.toDate ? e.endDate.toDate() : new Date(e.endDate);
+        document.getElementById('el-end').value = ed.toISOString().slice(0, 16);
+      }
+      document.getElementById('el-form-title').textContent = 'Edit Election';
+      document.getElementById('election-form-area').style.display = 'block';
+    };
+
+    window.deleteElection = async (id) => {
+      if (!confirm('Delete this election?')) return;
+      try { await db.collection('elections').doc(id).delete(); Utils.showToast('Deleted.', 'success'); }
+      catch (err) { Utils.showToast('Error: ' + err.message, 'error'); }
+    };
+
+    // Candidate form
+    function populateElectionSelect() {
+      const sel = document.getElementById('c-election');
+      sel.innerHTML = '<option value="">Select Election</option>';
+      elections.forEach(e => {
+        sel.innerHTML += `<option value="${e.id}">${Utils.escapeHtml(e.title)} (${e.type})</option>`;
+      });
+    }
+
+    document.getElementById('add-candidate-btn').addEventListener('click', () => {
+      document.getElementById('candidate-form').reset();
+      document.getElementById('candidate-form-area').style.display = 'block';
+    });
+
+    document.getElementById('candidate-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const elId = document.getElementById('c-election').value;
+      const el = elections.find(x => x.id === elId);
+      try {
+        await db.collection('candidates').add({
+          name: document.getElementById('c-name').value.trim(),
+          position: document.getElementById('c-position').value.trim(),
+          electionId: elId,
+          type: el ? el.type : 'student',
+          manifesto: document.getElementById('c-manifesto').value.trim(),
+          photoURL: document.getElementById('c-photo').value.trim(),
+          votes: 0
+        });
+        Utils.showToast('Candidate added!', 'success');
+        document.getElementById('candidate-form-area').style.display = 'none';
+      } catch (err) { Utils.showToast('Error: ' + err.message, 'error'); }
+    });
+
+    window.deleteCandidate = async (id) => {
+      if (!confirm('Delete this candidate?')) return;
+      try { await db.collection('candidates').doc(id).delete(); Utils.showToast('Deleted.', 'success'); }
+      catch (err) { Utils.showToast('Error: ' + err.message, 'error'); }
+    };
+
+    window.resetBiometric = async (uid) => {
+      if (!confirm('Reset biometric enrollment for this user?')) return;
+      try { await db.collection('users').doc(uid).update({ biometricEnrolled: false }); Utils.showToast('Biometric reset.', 'success'); }
+      catch (err) { Utils.showToast('Error: ' + err.message, 'error'); }
+    };
+  </script>
+</body>
+</html>

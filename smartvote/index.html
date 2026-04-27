@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartVote — Student Dashboard</title>
+  <meta name="description" content="SmartVote student dashboard - view and vote in elections">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar">
+    <a href="index.html" class="logo"><span>🗳️</span> SmartVote</a>
+    <div class="nav-right">
+      <a href="profile.html"><img src="https://ui-avatars.com/api/?name=S&background=2563eb&color=fff&size=36" alt="Profile" class="nav-profile" id="nav-profile-img"></a>
+      <a href="#" class="btn btn-ghost btn-sm logout-btn">Logout</a>
+      <button id="hamburger-btn">☰</button>
+    </div>
+  </nav>
+
+  <!-- Sidebar — always visible on desktop -->
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-profile">
+      <img src="https://ui-avatars.com/api/?name=S&background=2563eb&color=fff&size=64" alt="Profile" id="sidebar-profile-img">
+      <h4 id="sidebar-name">Student</h4>
+      <p id="sidebar-email">student@college.edu</p>
+    </div>
+    <div class="sidebar-section-label">Menu</div>
+    <ul class="sidebar-nav">
+      <li><a href="index.html" class="active">📊 Dashboard</a></li>
+      <li><a href="results.html">📈 Results</a></li>
+      <li><a href="profile.html">👤 My Profile</a></li>
+    </ul>
+    <div class="sidebar-section-label">Info</div>
+    <ul class="sidebar-nav">
+      <li><a href="features.html">⭐ Features</a></li>
+      <li><a href="about.html">ℹ️ About</a></li>
+    </ul>
+    <div class="sidebar-section-label">Account</div>
+    <ul class="sidebar-nav">
+      <li><a href="#" class="logout-btn">🚪 Logout</a></li>
+    </ul>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <div class="page-header">
+      <h1>Welcome, <span id="welcome-name">Student</span> 👋</h1>
+      <p>View active elections and cast your vote</p>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid" id="stats-grid">
+      <div class="stat-card"><div class="stat-value" id="stat-active">0</div><div class="stat-label">Active Elections</div></div>
+      <div class="stat-card"><div class="stat-value" id="stat-voted">0</div><div class="stat-label">Votes Cast</div></div>
+      <div class="stat-card"><div class="stat-value" id="stat-upcoming">0</div><div class="stat-label">Upcoming</div></div>
+      <div class="stat-card"><div class="stat-value" id="stat-closed">0</div><div class="stat-label">Completed</div></div>
+    </div>
+
+    <!-- Filter Tabs -->
+    <div class="filter-tabs">
+      <button class="filter-tab active" data-filter="active">🟢 Active</button>
+      <button class="filter-tab" data-filter="upcoming">🟡 Upcoming</button>
+      <button class="filter-tab" data-filter="closed">🔴 Closed</button>
+      <button class="filter-tab" data-filter="all">All</button>
+    </div>
+
+    <!-- Election Cards -->
+    <div class="cards-grid" id="elections-grid">
+      <div class="empty-state" id="loading-state">
+        <div class="empty-icon">⏳</div>
+        <h3>Loading elections...</h3>
+      </div>
+    </div>
+  </main>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/auth-guard.js"></script>
+
+  <script>
+    let allElections = [];
+    let currentFilter = 'active';
+    let userData = null;
+
+    AuthGuard.protect((user, data) => {
+      userData = data;
+      document.getElementById('sidebar-name').textContent = data.name || 'Student';
+      document.getElementById('sidebar-email').textContent = data.email || '';
+      if (data.photoURL) document.getElementById('sidebar-profile-img').src = data.photoURL;
+
+      db.collection('elections').where('type', '==', 'student')
+        .onSnapshot((snapshot) => {
+          allElections = [];
+          snapshot.forEach(doc => allElections.push({ id: doc.id, ...doc.data() }));
+          updateStats();
+          renderElections();
+        }, (err) => {
+          console.error('Elections error:', err);
+          Utils.showToast('Failed to load elections.', 'error');
+        });
+    });
+
+    function updateStats() {
+      document.getElementById('stat-active').textContent = allElections.filter(e => e.status === 'active').length;
+      document.getElementById('stat-upcoming').textContent = allElections.filter(e => e.status === 'upcoming').length;
+      document.getElementById('stat-closed').textContent = allElections.filter(e => e.status === 'closed').length;
+      document.getElementById('stat-voted').textContent = (userData && userData.votedIn) ? userData.votedIn.length : 0;
+    }
+
+    function renderElections() {
+      const grid = document.getElementById('elections-grid');
+      let filtered = currentFilter === 'all' ? allElections : allElections.filter(e => e.status === currentFilter);
+      if (filtered.length === 0) {
+        grid.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div><h3>No ${currentFilter} elections</h3><p>Check back later for new elections.</p></div>`;
+        return;
+      }
+      grid.innerHTML = filtered.map(e => Utils.buildElectionCard(e, userData ? userData.votedIn : [], 'student')).join('');
+    }
+
+    document.querySelectorAll('.filter-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        currentFilter = tab.dataset.filter;
+        renderElections();
+      });
+    });
+  </script>
+</body>
+</html>

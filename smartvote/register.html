@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartVote — Register</title>
+  <meta name="description" content="Register for SmartVote college voting platform">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="auth-page">
+    <div class="auth-container animate-fade-in" style="max-width:540px;">
+      <div class="auth-card">
+        <div class="auth-logo">
+          <h1>🗳️ SmartVote</h1>
+          <p>Create your account</p>
+        </div>
+
+        <div class="role-toggle" id="role-toggle">
+          <button class="role-toggle-btn active" data-role="student" id="toggle-student">🎓 Student</button>
+          <button class="role-toggle-btn" data-role="teacher" id="toggle-teacher">👨‍🏫 Teacher</button>
+          <button class="role-toggle-btn" data-role="admin" id="toggle-admin">🛡️ Admin</button>
+        </div>
+
+        <form id="register-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="name">Full Name *</label>
+              <input type="text" id="name" class="form-input" placeholder="John Doe" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="email">Email *</label>
+              <input type="email" id="email" class="form-input" placeholder="you@college.edu" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="password">Password *</label>
+              <input type="password" id="password" class="form-input" placeholder="Min 6 characters" required minlength="6">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="confirm-password">Confirm Password *</label>
+              <input type="password" id="confirm-password" class="form-input" placeholder="Re-enter password" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="college-id">College ID *</label>
+            <input type="text" id="college-id" class="form-input" placeholder="COL-2025-XXXX" required>
+          </div>
+
+
+
+          <!-- Student Fields -->
+          <div id="student-fields">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="student-class">Class *</label>
+                <input type="text" id="student-class" class="form-input" placeholder="e.g. CS-A">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="semester">Semester *</label>
+                <select id="semester" class="form-input">
+                  <option value="">Select Semester</option>
+                  <option>1</option><option>2</option><option>3</option><option>4</option>
+                  <option>5</option><option>6</option><option>7</option><option>8</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="roll-number">Roll Number *</label>
+              <input type="text" id="roll-number" class="form-input" placeholder="e.g. 21CS001">
+            </div>
+          </div>
+
+          <!-- Teacher Fields (hidden by default) -->
+          <div id="teacher-fields" style="display:none;">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="department">Department *</label>
+                <input type="text" id="department" class="form-input" placeholder="e.g. Computer Science">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="employee-id">Employee ID *</label>
+                <input type="text" id="employee-id" class="form-input" placeholder="EMP-XXXX">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="designation">Designation *</label>
+              <select id="designation" class="form-input">
+                <option value="">Select Designation</option>
+                <option>Assistant Professor</option>
+                <option>Associate Professor</option>
+                <option>Professor</option>
+                <option>HOD</option>
+                <option>Lecturer</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Admin Fields (hidden by default) -->
+          <div id="admin-fields" style="display:none;">
+            <div class="form-group">
+              <label class="form-label" for="admin-key">Admin Access Key *</label>
+              <input type="password" id="admin-key" class="form-input" placeholder="Enter admin access key">
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block btn-lg" id="register-btn" style="margin-top:8px;">Create Account</button>
+        </form>
+
+        <p style="text-align:center; margin-top:20px; font-size:.9rem; color:var(--text-light);">
+          Already have an account? <a href="login.html">Sign in</a>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/utils.js"></script>
+
+  <script>
+    let selectedRole = 'student';
+
+    // Role toggle
+    document.querySelectorAll('.role-toggle-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.role-toggle-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        selectedRole = btn.dataset.role;
+        document.getElementById('student-fields').style.display = selectedRole === 'student' ? 'block' : 'none';
+        document.getElementById('teacher-fields').style.display = selectedRole === 'teacher' ? 'block' : 'none';
+        document.getElementById('admin-fields').style.display = selectedRole === 'admin' ? 'block' : 'none';
+      });
+    });
+
+    // Registration
+    document.getElementById('register-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('register-btn');
+
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirm-password').value;
+      const collegeId = document.getElementById('college-id').value.trim();
+
+      if (password !== confirmPassword) {
+        Utils.showToast('Passwords do not match.', 'error');
+        return;
+      }
+
+      if (selectedRole === 'admin') {
+        const adminKeyInput = document.getElementById('admin-key').value;
+        if (adminKeyInput !== APP_CONFIG.adminAccessKey) {
+          Utils.showToast('Invalid Admin Access Key.', 'error');
+          return;
+        }
+      }
+
+      Utils.setLoading(btn, true);
+
+      try {
+        const cred = await auth.createUserWithEmailAndPassword(email, password);
+        const uid = cred.user.uid;
+        let photoURL = '';
+
+        // Build user data
+        const userData = {
+          name, email, collegeId, photoURL,
+          role: selectedRole,
+          votedIn: [],
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+
+        if (selectedRole === 'student') {
+          userData.class = document.getElementById('student-class').value.trim();
+          userData.semester = document.getElementById('semester').value;
+          userData.rollNumber = document.getElementById('roll-number').value.trim();
+        } else if (selectedRole === 'teacher') {
+          userData.department = document.getElementById('department').value.trim();
+          userData.employeeId = document.getElementById('employee-id').value.trim();
+          userData.designation = document.getElementById('designation').value;
+          userData.biometricEnrolled = false;
+        }
+        // Admin: no extra fields needed
+
+        await db.collection('users').doc(uid).set(userData);
+        await cred.user.updateProfile({ displayName: name, photoURL });
+
+        Utils.showToast('Registration successful!', 'success');
+        setTimeout(() => {
+          window.location.href = APP_CONFIG.roleDashboard[selectedRole];
+        }, 800);
+      } catch (err) {
+        let msg = err.message;
+        if (err.code === 'auth/email-already-in-use') msg = 'Email already registered.';
+        else if (err.code === 'auth/weak-password') msg = 'Password too weak (min 6 chars).';
+        Utils.showToast(msg, 'error');
+        Utils.setLoading(btn, false, 'Create Account');
+      }
+    });
+  </script>
+</body>
+</html>

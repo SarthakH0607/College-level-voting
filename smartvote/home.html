@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartVote — Secure College Voting Platform</title>
+  <meta name="description" content="SmartVote - Secure, fair, and transparent college elections with biometric verification">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .home-nav { position: fixed; top: 0; left: 0; right: 0; height: 68px; display: flex; align-items: center; justify-content: space-between; padding: 0 40px; z-index: 100; background: transparent; transition: background .3s; }
+    .home-nav.scrolled { background: rgba(15,23,42,.95); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,.08); }
+    .home-nav .logo { font-size: 1.5rem; font-weight: 800; color: white; display: flex; align-items: center; gap: 8px; }
+    .home-nav .nav-btns { display: flex; gap: 12px; }
+    .home-nav .nav-btns a { padding: 9px 22px; border-radius: 8px; font-weight: 600; font-size: .9rem; transition: all .2s; }
+    .btn-login-nav { color: white; border: 1.5px solid rgba(255,255,255,.3); background: transparent; }
+    .btn-login-nav:hover { background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.6); }
+    .btn-signup-nav { background: #2563eb; color: white; border: 1.5px solid #2563eb; }
+    .btn-signup-nav:hover { background: #1d4ed8; transform: translateY(-1px); }
+
+    .hero { min-height: 100vh; display: flex; align-items: center; justify-content: center; text-align: center; padding: 80px 24px 60px; background: linear-gradient(135deg, #0f172a 0%, #1e293b 40%, #0f172a 100%); position: relative; overflow: hidden; }
+    .hero::before { content: ''; position: absolute; width: 600px; height: 600px; background: radial-gradient(circle, rgba(37,99,235,.15) 0%, transparent 70%); top: -100px; right: -100px; border-radius: 50%; }
+    .hero::after { content: ''; position: absolute; width: 500px; height: 500px; background: radial-gradient(circle, rgba(124,58,237,.12) 0%, transparent 70%); bottom: -100px; left: -100px; border-radius: 50%; }
+    .hero-content { position: relative; z-index: 2; max-width: 720px; }
+    .hero-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 16px; background: rgba(37,99,235,.15); border: 1px solid rgba(37,99,235,.3); border-radius: 999px; color: #60a5fa; font-size: .82rem; font-weight: 600; margin-bottom: 24px; }
+    .hero h1 { font-size: 3.2rem; font-weight: 800; color: white; line-height: 1.15; margin-bottom: 18px; }
+    .hero h1 span { background: linear-gradient(135deg, #3b82f6, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .hero p { color: #94a3b8; font-size: 1.15rem; line-height: 1.7; margin-bottom: 36px; }
+    .hero-btns { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+    .hero-btns .btn { padding: 14px 32px; font-size: 1rem; border-radius: 10px; }
+    .btn-white { background: white; color: #0f172a; font-weight: 700; }
+    .btn-white:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(255,255,255,.15); }
+    .btn-outline-white { background: transparent; color: white; border: 1.5px solid rgba(255,255,255,.3); }
+    .btn-outline-white:hover { background: rgba(255,255,255,.08); border-color: white; }
+
+    .features-section { padding: 80px 24px; background: #f8fafc; }
+    .features-section .section-header { text-align: center; margin-bottom: 48px; }
+    .features-section .section-header h2 { font-size: 2rem; font-weight: 800; margin-bottom: 8px; }
+    .features-section .section-header p { color: var(--text-light); font-size: 1rem; }
+    .features-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; max-width: 1100px; margin: 0 auto; }
+    .feature-card { background: white; border: 1px solid var(--border); border-radius: 16px; padding: 28px; transition: all .25s; }
+    .feature-card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0,0,0,.08); }
+    .feature-icon { width: 52px; height: 52px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 16px; }
+    .feature-card h3 { font-size: 1.05rem; margin-bottom: 8px; }
+    .feature-card p { color: var(--text-light); font-size: .88rem; line-height: 1.6; }
+    .icon-blue { background: #dbeafe; }
+    .icon-purple { background: #ede9fe; }
+    .icon-green { background: #d1fae5; }
+    .icon-amber { background: #fef3c7; }
+
+    .roles-section { padding: 80px 24px; background: white; }
+    .roles-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px; max-width: 900px; margin: 0 auto; }
+    .role-card { border-radius: 16px; padding: 36px 28px; text-align: center; border: 2px solid var(--border); transition: all .25s; }
+    .role-card:hover { transform: translateY(-4px); }
+    .role-card.student-card:hover { border-color: #3b82f6; box-shadow: 0 8px 24px rgba(37,99,235,.12); }
+    .role-card.teacher-card:hover { border-color: #8b5cf6; box-shadow: 0 8px 24px rgba(124,58,237,.12); }
+    .role-card .role-icon { font-size: 3rem; margin-bottom: 16px; }
+    .role-card h3 { font-size: 1.3rem; margin-bottom: 8px; }
+    .role-card p { color: var(--text-light); font-size: .9rem; margin-bottom: 20px; line-height: 1.6; }
+    .role-card ul { text-align: left; list-style: none; margin-bottom: 24px; }
+    .role-card ul li { padding: 6px 0; font-size: .88rem; color: var(--text-light); }
+    .role-card ul li::before { content: '✓ '; color: var(--success); font-weight: 700; }
+
+    .cta-section { padding: 80px 24px; background: linear-gradient(135deg, #0f172a, #1e293b); text-align: center; }
+    .cta-section h2 { font-size: 2rem; font-weight: 800; color: white; margin-bottom: 12px; }
+    .cta-section p { color: #94a3b8; font-size: 1rem; margin-bottom: 32px; }
+
+    .home-footer { padding: 24px; text-align: center; background: #0f172a; border-top: 1px solid rgba(255,255,255,.06); color: #64748b; font-size: .85rem; }
+
+    @media (max-width: 768px) {
+      .hero h1 { font-size: 2rem; }
+      .hero p { font-size: 1rem; }
+      .home-nav { padding: 0 16px; }
+      .features-grid { grid-template-columns: 1fr; }
+      .roles-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body style="background:#0f172a;">
+  <!-- Navbar -->
+  <nav class="home-nav" id="home-nav">
+    <div class="logo"><span>🗳️</span> SmartVote</div>
+    <div class="nav-btns">
+      <a href="login.html" class="btn-login-nav">Login</a>
+      <a href="register.html" class="btn-signup-nav">Sign Up Free</a>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-content animate-fade-in">
+      <div class="hero-badge">🔐 Secured with Biometric Verification</div>
+      <h1>The Future of <span>College Elections</span> is Here</h1>
+      <p>SmartVote brings secure, fair, and transparent voting to your campus. Students vote for Class Representatives. Teachers vote for Class Mentors — verified with face & voice recognition.</p>
+      <div class="hero-btns">
+        <a href="register.html" class="btn btn-white">Get Started →</a>
+        <a href="#features" class="btn btn-outline-white">See Features</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="features-section" id="features">
+    <div class="section-header">
+      <h2>Why SmartVote?</h2>
+      <p>Everything you need for secure campus elections</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon icon-blue">🗳️</div>
+        <h3>Position-Based Voting</h3>
+        <p>Vote for CR, Vice CR, Treasurer, and more — each position handled separately for fair representation.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon icon-purple">📷</div>
+        <h3>Face Recognition</h3>
+        <p>Teachers verify identity through AI-powered facial recognition using InsightFace before casting their vote.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon icon-purple">🎙️</div>
+        <h3>Voice Verification</h3>
+        <p>Dual biometric security with Canary-Qwen 2.5B voice recognition and passphrase matching.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon icon-green">📊</div>
+        <h3>Real-Time Results</h3>
+        <p>Watch votes update live with animated progress bars. Transparent results for every election.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon icon-blue">🛡️</div>
+        <h3>One Vote Per Election</h3>
+        <p>Duplicate voting is prevented at every level — database, client, and security rules.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon icon-amber">📱</div>
+        <h3>Works Everywhere</h3>
+        <p>Fully responsive design — vote from your laptop, tablet, or phone with the same great experience.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Roles -->
+  <section class="roles-section">
+    <div class="section-header" style="text-align:center; margin-bottom:48px;">
+      <h2 style="font-size:2rem; font-weight:800; margin-bottom:8px;">Two Roles, One Platform</h2>
+      <p style="color:var(--text-light);">Each role gets a tailored experience</p>
+    </div>
+    <div class="roles-grid">
+      <div class="role-card student-card">
+        <div class="role-icon">🎓</div>
+        <h3 style="color:#2563eb;">Students</h3>
+        <p>Vote for your class representatives across multiple positions.</p>
+        <ul>
+          <li>Vote for CR, Vice CR, Treasurer & more</li>
+          <li>One vote per position per election</li>
+          <li>View real-time results</li>
+          <li>Track your voting history</li>
+        </ul>
+        <a href="register.html" class="btn btn-primary">Register as Student</a>
+      </div>
+      <div class="role-card teacher-card">
+        <div class="role-icon">👨‍🏫</div>
+        <h3 style="color:#7c3aed;">Teachers</h3>
+        <p>Vote for Class Mentors with biometric verification.</p>
+        <ul>
+          <li>Face recognition (InsightFace AI)</li>
+          <li>Voice verification (Canary-Qwen 2.5B)</li>
+          <li>Biometric enrollment in profile</li>
+          <li>Secure, tamper-proof voting</li>
+        </ul>
+        <a href="register.html" class="btn" style="background:#7c3aed; color:white;">Register as Teacher</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <h2>Ready to modernize your campus elections?</h2>
+    <p>Join SmartVote today and experience secure, transparent voting.</p>
+    <div class="hero-btns">
+      <a href="register.html" class="btn btn-white">Create Account</a>
+      <a href="login.html" class="btn btn-outline-white">Login</a>
+    </div>
+  </section>
+
+  <footer class="home-footer">
+    <p>© 2025 SmartVote — City College of Technology. Built with Firebase & AI.</p>
+  </footer>
+
+  <script>
+    // Navbar scroll effect
+    window.addEventListener('scroll', () => {
+      document.getElementById('home-nav').classList.toggle('scrolled', window.scrollY > 50);
+    });
+  </script>
+</body>
+</html>

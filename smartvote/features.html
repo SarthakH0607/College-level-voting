@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartVote — Features</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <a href="#" class="logo" id="logo-link"><span>🗳️</span> SmartVote</a>
+    <div class="nav-right">
+      <a href="profile.html"><img src="https://ui-avatars.com/api/?name=U&background=2563eb&color=fff&size=36" alt="Profile" class="nav-profile" id="nav-profile-img"></a>
+      <a href="#" class="btn btn-ghost btn-sm logout-btn">Logout</a>
+      <button id="hamburger-btn">☰</button>
+    </div>
+  </nav>
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-section-label">Menu</div>
+    <ul class="sidebar-nav">
+      <li><a href="#" id="side-dashboard">📊 Dashboard</a></li>
+      <li><a href="results.html">📈 Results</a></li>
+      <li><a href="profile.html">👤 My Profile</a></li>
+    </ul>
+    <div class="sidebar-section-label">Info</div>
+    <ul class="sidebar-nav">
+      <li><a href="features.html" class="active">⭐ Features</a></li>
+      <li><a href="about.html">ℹ️ About</a></li>
+    </ul>
+    <div class="sidebar-section-label">Account</div>
+    <ul class="sidebar-nav">
+      <li><a href="#" class="logout-btn">🚪 Logout</a></li>
+    </ul>
+  </aside>
+
+  <main class="main-content">
+    <div class="page-header"><h1>⭐ Platform Features</h1><p>Everything you need for secure college elections</p></div>
+    <div class="cards-grid">
+      <div class="card animate-fade-in"><div style="font-size:2rem; margin-bottom:12px;">🗳️</div><h3>Position-Based Voting</h3><p class="card-desc">Vote for CR, Vice CR, Treasurer, and more — each position handled separately for fair representation.</p></div>
+      <div class="card animate-fade-in"><div style="font-size:2rem; margin-bottom:12px;">📷</div><h3>Face Recognition</h3><p class="card-desc">Teachers verify identity through InsightFace-powered facial recognition before casting their vote.</p></div>
+      <div class="card animate-fade-in"><div style="font-size:2rem; margin-bottom:12px;">🎙️</div><h3>Voice Verification</h3><p class="card-desc">Dual biometric security with Canary-Qwen 2.5B voice recognition and passphrase matching for teacher elections.</p></div>
+      <div class="card animate-fade-in"><div style="font-size:2rem; margin-bottom:12px;">📊</div><h3>Real-Time Results</h3><p class="card-desc">Watch vote counts update live with animated progress bars powered by Firestore real-time snapshots.</p></div>
+      <div class="card animate-fade-in"><div style="font-size:2rem; margin-bottom:12px;">🛡️</div><h3>Duplicate Prevention</h3><p class="card-desc">One vote per user per election, enforced through Firestore transactions and security rules.</p></div>
+      <div class="card animate-fade-in"><div style="font-size:2rem; margin-bottom:12px;">📱</div><h3>Fully Responsive</h3><p class="card-desc">Works beautifully on desktop, tablet, and mobile devices with adaptive layouts.</p></div>
+      <div class="card animate-fade-in"><div style="font-size:2rem; margin-bottom:12px;">⚙️</div><h3>Admin Panel</h3><p class="card-desc">Complete election management — create elections, add candidates, manage users, and reset biometrics.</p></div>
+      <div class="card animate-fade-in"><div style="font-size:2rem; margin-bottom:12px;">🎨</div><h3>Role-Based Theming</h3><p class="card-desc">Students see blue, teachers see purple, admins see slate — instant visual context for every user.</p></div>
+    </div>
+  </main>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/auth-guard.js"></script>
+  <script>
+    AuthGuard.protect((user, data) => {
+      const dash = APP_CONFIG.roleDashboard[data.role];
+      document.getElementById('logo-link').href = dash;
+      document.getElementById('side-dashboard').href = dash;
+    });
+  </script>
+</body>
+</html>

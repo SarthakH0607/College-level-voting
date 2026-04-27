@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en" data-role="teacher">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartVote — Teacher Vote (Biometric Verified)</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <a href="teacher-dashboard.html" class="logo"><span>🗳️</span> SmartVote</a>
+    <div class="nav-right">
+      <a href="profile.html"><img src="https://ui-avatars.com/api/?name=T&background=7c3aed&color=fff&size=36" alt="Profile" class="nav-profile" id="nav-profile-img"></a>
+      <a href="#" class="btn btn-ghost btn-sm logout-btn">Logout</a>
+      <button id="hamburger-btn">☰</button>
+    </div>
+  </nav>
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-section-label">Menu</div>
+    <ul class="sidebar-nav">
+      <li><a href="teacher-dashboard.html">📊 Dashboard</a></li>
+      <li><a href="results.html">📈 Results</a></li>
+      <li><a href="profile.html">👤 My Profile</a></li>
+    </ul>
+    <div class="sidebar-section-label">Biometrics</div>
+    <ul class="sidebar-nav">
+      <li><a href="profile.html#biometric">🔐 Biometric Setup</a></li>
+    </ul>
+    <div class="sidebar-section-label">Account</div>
+    <ul class="sidebar-nav">
+      <li><a href="#" class="logout-btn">🚪 Logout</a></li>
+    </ul>
+  </aside>
+
+  <main class="main-content">
+    <div class="page-header">
+      <h1 id="election-title">Loading...</h1>
+      <p>Biometric verification required before voting</p>
+    </div>
+
+    <!-- Biometric Steps -->
+    <div class="biometric-steps" id="bio-steps">
+      <div class="bio-step active" id="step-face">1. Face Verify</div>
+      <div class="bio-step" id="step-voice">2. Voice Verify</div>
+      <div class="bio-step" id="step-vote">3. Cast Vote</div>
+    </div>
+
+    <!-- Step 1: Face Verification -->
+    <div class="card" id="face-section" style="max-width:600px; margin:0 auto 24px;">
+      <h2 style="margin-bottom:16px;">📷 Face Recognition</h2>
+      <p style="color:var(--text-light); margin-bottom:16px;">Position your face in the camera frame and click "Scan Face".</p>
+      <video id="face-video" class="camera-preview" autoplay playsinline></video>
+      <canvas id="face-canvas" style="display:none;"></canvas>
+      <div class="bio-status scanning" id="face-status" style="display:none;">🔄 Scanning face...</div>
+      <p style="font-size:.85rem; color:var(--text-light); margin:8px 0;" id="face-retries">Attempts remaining: 3</p>
+      <div style="display:flex; gap:8px; justify-content:center;">
+        <button class="btn btn-primary" id="start-face-btn">📷 Start Camera</button>
+        <button class="btn btn-primary" id="scan-face-btn" style="display:none;">🔍 Scan Face</button>
+      </div>
+    </div>
+
+    <!-- Step 2: Voice Verification (hidden initially) -->
+    <div class="card" id="voice-section" style="max-width:600px; margin:0 auto 24px; display:none;">
+      <h2 style="margin-bottom:16px;">🎙️ Voice Recognition</h2>
+      <p style="color:var(--text-light); margin-bottom:8px;">Please say the following passphrase clearly:</p>
+      <div style="background:var(--bg); padding:16px; border-radius:var(--radius-sm); text-align:center; font-size:1.2rem; font-weight:700; margin:16px 0; color:var(--accent);" id="passphrase-display">—</div>
+      <div class="audio-wave" id="audio-wave" style="display:none;">
+        <span></span><span></span><span></span><span></span><span></span>
+      </div>
+      <div class="bio-status scanning" id="voice-status" style="display:none;">🎙️ Please say the passphrase...</div>
+      <p style="font-size:.85rem; color:var(--text-light); margin:8px 0;" id="voice-retries">Attempts remaining: 3</p>
+      <div style="display:flex; gap:8px; justify-content:center;">
+        <button class="btn btn-primary" id="record-voice-btn">🎙️ Start Recording</button>
+        <button class="btn btn-danger" id="stop-voice-btn" style="display:none;">⏹️ Stop Recording</button>
+      </div>
+    </div>
+
+    <!-- Step 3: Candidate Selection (hidden until verified) -->
+    <div id="vote-section" style="display:none;">
+      <div class="card" style="max-width:600px; margin:0 auto 16px; text-align:center;">
+        <span class="badge badge-success" style="font-size:.9rem; padding:8px 16px;">✅ Biometric Verified</span>
+      </div>
+      <div class="candidates-grid" id="candidates-grid"></div>
+      <div style="text-align:center; margin-top:24px;">
+        <button class="btn btn-primary btn-lg" id="submit-vote-btn" disabled>Submit Verified Vote</button>
+        <p style="margin-top:8px; font-size:.85rem; color:var(--text-light);" id="vote-hint">Select a candidate</p>
+      </div>
+    </div>
+
+    <!-- Lockout -->
+    <div class="card" id="lockout-section" style="max-width:500px; margin:0 auto; display:none; text-align:center;">
+      <div style="font-size:3rem; margin-bottom:12px;">🔒</div>
+      <h2 style="color:var(--error);">Verification Failed</h2>
+      <p style="color:var(--text-light); margin-top:8px;">Maximum attempts exceeded. Please contact your administrator to reset biometric verification.</p>
+      <a href="teacher-dashboard.html" class="btn btn-outline" style="margin-top:16px;">← Back to Dashboard</a>
+    </div>
+  </main>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/auth-guard.js"></script>
+
+  <script>
+    const electionId = Utils.getParam('id');
+    if (!electionId) window.location.href = 'teacher-dashboard.html';
+
+    let userData = null;
+    let selectedCandidate = null;
+    let faceRetries = 3;
+    let voiceRetries = 3;
+    let faceVerified = false;
+    let voiceVerified = false;
+    let videoStream = null;
+    let mediaRecorder = null;
+    let audioChunks = [];
+    let audioNotSilent = false;
+    const passphrase = APP_CONFIG.getRandomPassphrase();
+    const sessionId = crypto.randomUUID();
+
+    AuthGuard.protect(async (user, data) => {
+      userData = data;
+
+      if (data.votedIn && data.votedIn.includes(electionId)) {
+        Utils.showToast('Already voted in this election.', 'warning');
+        setTimeout(() => window.location.href = 'teacher-dashboard.html', 1500);
+        return;
+      }
+
+      const elDoc = await db.collection('elections').doc(electionId).get();
+      if (!elDoc.exists || elDoc.data().status !== 'active') {
+        Utils.showToast('Election not available.', 'error');
+        setTimeout(() => window.location.href = 'teacher-dashboard.html', 1500);
+        return;
+      }
+      document.getElementById('election-title').textContent = elDoc.data().title;
+      document.getElementById('passphrase-display').textContent = `"${passphrase}"`;
+
+      // Preload candidates
+      loadCandidates();
+    });
+
+    async function loadCandidates() {
+      const snap = await db.collection('candidates').where('electionId', '==', electionId).get();
+      const grid = document.getElementById('candidates-grid');
+      grid.innerHTML = '';
+      snap.forEach(doc => {
+        const c = doc.data();
+        const card = document.createElement('div');
+        card.className = 'candidate-card animate-fade-in';
+        card.dataset.id = doc.id;
+        card.innerHTML = `
+          <img src="${c.photoURL || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(c.name) + '&background=7c3aed&color=fff&size=80'}" alt="${c.name}">
+          <h3>${Utils.escapeHtml(c.name)}</h3>
+          <p class="position">${Utils.escapeHtml(c.position || '')}</p>
+        `;
+        card.addEventListener('click', () => {
+          document.querySelectorAll('.candidate-card').forEach(cc => cc.classList.remove('selected'));
+          card.classList.add('selected');
+          selectedCandidate = doc.id;
+          document.getElementById('submit-vote-btn').disabled = false;
+          document.getElementById('vote-hint').textContent = `Selected: ${c.name}`;
+        });
+        grid.appendChild(card);
+      });
+    }
+
+    function lockout() {
+      document.getElementById('face-section').style.display = 'none';
+      document.getElementById('voice-section').style.display = 'none';
+      document.getElementById('vote-section').style.display = 'none';
+      document.getElementById('lockout-section').style.display = 'block';
+      if (videoStream) videoStream.getTracks().forEach(t => t.stop());
+    }
+
+    // ── Face Verification ──────────────────
+    document.getElementById('start-face-btn').addEventListener('click', async () => {
+      try {
+        videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+        document.getElementById('face-video').srcObject = videoStream;
+        document.getElementById('start-face-btn').style.display = 'none';
+        document.getElementById('scan-face-btn').style.display = 'inline-flex';
+      } catch (err) {
+        Utils.showToast('Camera access denied.', 'error');
+      }
+    });
+
+    document.getElementById('scan-face-btn').addEventListener('click', async () => {
+      if (faceRetries <= 0) { lockout(); return; }
+      const btn = document.getElementById('scan-face-btn');
+      const status = document.getElementById('face-status');
+      Utils.setLoading(btn, true);
+      status.style.display = 'block';
+      status.className = 'bio-status scanning';
+      status.textContent = '🔄 Scanning face...';
+
+      const cameraActive = !!(videoStream && videoStream.active);
+      const video = document.getElementById('face-video');
+      const canvas = document.getElementById('face-canvas');
+      if (!video.videoWidth || !video.videoHeight) {
+        status.className = 'bio-status failed';
+        status.textContent = '❌ Camera not ready. Please wait a moment and try again.';
+        Utils.setLoading(btn, false, '🔍 Scan Face');
+        return;
+      }
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      canvas.getContext('2d').drawImage(video, 0, 0);
+      const imageData = canvas.toDataURL('image/jpeg', 0.8);
+      const faceDetected = cameraActive;
+
+      try {
+        const ctrl = new AbortController();
+        setTimeout(() => ctrl.abort(), 30000); // Increased to 30s for ML model loading
+        const res = await fetch(`${APP_CONFIG.biometricServiceURL}/verify-face`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            image: imageData,
+            uid: auth.currentUser.uid,
+            camera_active: cameraActive,
+            face_detected: faceDetected,
+            session_id: sessionId
+          }),
+          signal: ctrl.signal
+        });
+        const result = await res.json();
+
+        if (result.status === 'VERIFIED') {
+          faceVerified = true;
+          status.className = 'bio-status verified';
+          status.textContent = `✅ Face Verified (score: ${(result.similarity_score * 100).toFixed(1)}%)`;
+          document.getElementById('step-face').className = 'bio-step done';
+          document.getElementById('step-voice').className = 'bio-step active';
+          videoStream.getTracks().forEach(t => t.stop());
+          Utils.showToast('Face verified!', 'success');
+          setTimeout(() => {
+            document.getElementById('face-section').style.display = 'none';
+            document.getElementById('voice-section').style.display = 'block';
+          }, 1000);
+        } else {
+          faceRetries--;
+          status.className = 'bio-status failed';
+          status.textContent = `❌ ${result.reason || 'Face not recognized.'}`;
+          document.getElementById('face-retries').textContent = `Attempts remaining: ${faceRetries}`;
+          if (faceRetries <= 0) lockout();
+        }
+      } catch (err) {
+        faceRetries--;
+        status.className = 'bio-status failed';
+        status.textContent = `❌ Service unavailable (${err.name === 'AbortError' ? 'Timeout' : err.message}). Try again.`;
+        document.getElementById('face-retries').textContent = `Attempts remaining: ${faceRetries}`;
+        if (faceRetries <= 0) lockout();
+      }
+      Utils.setLoading(btn, false, '🔍 Scan Face');
+    });
+
+    // ── Voice Verification ──────────────────
+    let speechTranscript = '';
+
+    document.getElementById('record-voice-btn').addEventListener('click', async () => {
+      if (voiceRetries <= 0) { lockout(); return; }
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+        audioNotSilent = false;
+        speechTranscript = '';
+
+        // Audio energy detection via AnalyserNode
+        const audioCtx = new AudioContext();
+        const source = audioCtx.createMediaStreamSource(stream);
+        const analyser = audioCtx.createAnalyser();
+        analyser.fftSize = 2048;
+        source.connect(analyser);
+        const dataArr = new Uint8Array(analyser.frequencyBinCount);
+        const energyCheck = setInterval(() => {
+          analyser.getByteTimeDomainData(dataArr);
+          let sum = 0;
+          for (let i = 0; i < dataArr.length; i++) {
+            const v = (dataArr[i] - 128) / 128;
+            sum += v * v;
+          }
+          const rms = Math.sqrt(sum / dataArr.length);
+          if (rms > 0.02) audioNotSilent = true;
+        }, 200);
+
+        // Web Speech API for real-time transcription
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        let recognition = null;
+        if (SpeechRecognition) {
+          recognition = new SpeechRecognition();
+          recognition.continuous = true;
+          recognition.interimResults = true;
+          recognition.lang = 'en-US';
+          recognition.onresult = (event) => {
+            let transcript = '';
+            for (let i = 0; i < event.results.length; i++) {
+              transcript += event.results[i][0].transcript;
+            }
+            speechTranscript = transcript.trim();
+          };
+          recognition.onerror = (e) => console.log('Speech recognition error:', e.error);
+          recognition.start();
+        }
+
+        mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
+        mediaRecorder.onstop = () => {
+          clearInterval(energyCheck);
+          audioCtx.close();
+          if (recognition) { try { recognition.stop(); } catch(e) {} }
+          stream.getTracks().forEach(t => t.stop());
+          verifyVoice();
+        };
+        mediaRecorder.start();
+        document.getElementById('record-voice-btn').style.display = 'none';
+        document.getElementById('stop-voice-btn').style.display = 'inline-flex';
+        document.getElementById('audio-wave').style.display = 'flex';
+        const status = document.getElementById('voice-status');
+        status.style.display = 'block';
+        status.className = 'bio-status scanning';
+        status.textContent = '🎙️ Recording... Say the passphrase now';
+
+        setTimeout(() => { if (mediaRecorder && mediaRecorder.state === 'recording') mediaRecorder.stop(); }, 8000);
+      } catch (err) {
+        Utils.showToast('Microphone access denied.', 'error');
+      }
+    });
+
+    document.getElementById('stop-voice-btn').addEventListener('click', () => {
+      if (mediaRecorder && mediaRecorder.state === 'recording') mediaRecorder.stop();
+      document.getElementById('stop-voice-btn').style.display = 'none';
+      document.getElementById('audio-wave').style.display = 'none';
+    });
+
+    async function verifyVoice() {
+      const status = document.getElementById('voice-status');
+      status.className = 'bio-status scanning';
+      status.textContent = '🔄 Verifying voice...';
+      document.getElementById('audio-wave').style.display = 'none';
+
+      const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+      const formData = new FormData();
+      formData.append('audio', audioBlob, 'voice.webm');
+      formData.append('uid', auth.currentUser.uid);
+      formData.append('expectedPhrase', passphrase);
+      formData.append('audio_active', 'true');
+      formData.append('not_silent', audioNotSilent ? 'true' : 'false');
+      formData.append('session_id', sessionId);
+      formData.append('client_transcript', speechTranscript);
+
+      try {
+        const ctrl = new AbortController();
+        setTimeout(() => ctrl.abort(), 30000); // Increased to 30s for ML model loading
+        const res = await fetch(`${APP_CONFIG.biometricServiceURL}/verify-voice`, {
+          method: 'POST', body: formData, signal: ctrl.signal
+        });
+        const result = await res.json();
+
+        if (result.status === 'VERIFIED') {
+          voiceVerified = true;
+          status.className = 'bio-status verified';
+          status.textContent = `✅ Voice Verified (score: ${(result.confidence_score * 100).toFixed(1)}%)`;
+          document.getElementById('step-voice').className = 'bio-step done';
+          document.getElementById('step-vote').className = 'bio-step active';
+          Utils.showToast('Voice verified! Select your candidate.', 'success');
+          setTimeout(() => {
+            document.getElementById('voice-section').style.display = 'none';
+            document.getElementById('vote-section').style.display = 'block';
+          }, 1000);
+        } else {
+          voiceRetries--;
+          status.className = 'bio-status failed';
+          status.textContent = `❌ ${result.reason || 'Voice not recognized.'}`;
+          document.getElementById('voice-retries').textContent = `Attempts remaining: ${voiceRetries}`;
+          document.getElementById('record-voice-btn').style.display = 'inline-flex';
+          if (voiceRetries <= 0) lockout();
+        }
+      } catch (err) {
+        voiceRetries--;
+        status.className = 'bio-status failed';
+        status.textContent = `❌ Service unavailable (${err.name === 'AbortError' ? 'Timeout' : err.message}). Try again.`;
+        document.getElementById('voice-retries').textContent = `Attempts remaining: ${voiceRetries}`;
+        document.getElementById('record-voice-btn').style.display = 'inline-flex';
+        if (voiceRetries <= 0) lockout();
+      }
+    }
+
+    // ── Submit Vote ──────────────────
+    document.getElementById('submit-vote-btn').addEventListener('click', async () => {
+      if (!selectedCandidate || !faceVerified || !voiceVerified) return;
+      const btn = document.getElementById('submit-vote-btn');
+      Utils.setLoading(btn, true);
+
+      try {
+        const batch = db.batch();
+        batch.set(db.collection('votes').doc(), {
+          userId: auth.currentUser.uid,
+          electionId, candidateId: selectedCandidate,
+          timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+          voterRole: 'teacher',
+          biometricVerified: true, faceVerified: true, voiceVerified: true,
+          biometricSessionId: sessionId
+        });
+        batch.update(db.collection('users').doc(auth.currentUser.uid), {
+          votedIn: firebase.firestore.FieldValue.arrayUnion(electionId)
+        });
+        batch.update(db.collection('candidates').doc(selectedCandidate), {
+          votes: firebase.firestore.FieldValue.increment(1)
+        });
+        batch.update(db.collection('elections').doc(electionId), {
+          totalVotes: firebase.firestore.FieldValue.increment(1)
+        });
+        await batch.commit();
+
+        Utils.showToast('Vote submitted with biometric verification!', 'success');
+        setTimeout(() => {
+          window.location.href = `confirmation.html?election=${electionId}&candidate=${selectedCandidate}`;
+        }, 600);
+      } catch (err) {
+        Utils.showToast('Vote failed: ' + err.message, 'error');
+        Utils.setLoading(btn, false, 'Submit Verified Vote');
+      }
+    });
+  </script>
+</body>
+</html>
