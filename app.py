@@ -10,7 +10,7 @@ import base64
 import uuid
 import tempfile
 import logging
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 
 # ── Logging ──────────────────────────────────────────────
@@ -84,6 +84,18 @@ def _parse_bool_flag(value):
 
 
 # ── Endpoints ────────────────────────────────────────────
+
+@app.route('/')
+def serve_index():
+    """Serve the main frontend page."""
+    return send_from_directory(os.path.dirname(__file__), 'index.html')
+
+@app.route('/<path:path>')
+def serve_static(path):
+    """Serve all other HTML, CSS, and JS files from the root directory."""
+    if os.path.exists(os.path.join(os.path.dirname(__file__), path)):
+        return send_from_directory(os.path.dirname(__file__), path)
+    return jsonify({"error": "File not found"}), 404
 
 @app.route('/verify-face', methods=['POST'])
 def verify_face():
