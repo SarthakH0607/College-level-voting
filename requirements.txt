@@ -1,11 +1,8 @@
 flask
 flask-cors
+gunicorn
 numpy
-opencv-python
-insightface
-onnxruntime
-onnxruntime-gpu
-torch
-transformers
+opencv-python-headless
+deepface
+tf-keras
 soundfile
-firebase-admin
