@@ -2,7 +2,3 @@ flask
 flask-cors
 gunicorn
 numpy
-opencv-python-headless
-deepface
-tf-keras
-soundfile
