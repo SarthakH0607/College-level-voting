@@ -8,7 +8,7 @@ const APP_CONFIG = {
   version: '1.0.0',
 
   // Biometric microservice URL
-  biometricServiceURL: 'http://localhost:5000',
+  biometricServiceURL: 'http://localhost:4000',
 
   // Max biometric retry attempts before lockout
   maxBiometricRetries: 3,
