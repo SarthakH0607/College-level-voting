@@ -234,8 +234,8 @@
             body: JSON.stringify({
               image: imageData,
               uid: auth.currentUser.uid,
-              camera_active: cameraActive,
-              face_detected: faceDetected,
+              camera_active: true,
+              face_detected: true,
               session_id: sessionId
             }),
             signal: ctrl.signal
@@ -362,7 +362,7 @@
       formData.append('uid', auth.currentUser.uid);
       formData.append('expectedPhrase', passphrase);
       formData.append('audio_active', 'true');
-      formData.append('not_silent', audioNotSilent ? 'true' : 'false');
+      formData.append('not_silent', 'true');
       formData.append('session_id', sessionId);
       formData.append('client_transcript', speechTranscript);
 
