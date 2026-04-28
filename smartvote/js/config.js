@@ -7,8 +7,10 @@ const APP_CONFIG = {
   collegeName: 'City College of Technology',
   version: '1.0.0',
 
-  // Biometric microservice URL
-  biometricServiceURL: 'http://localhost:4000',
+  // Biometric microservice URL (auto-detect: localhost for dev, same origin for Render)
+  biometricServiceURL: (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+    ? 'http://localhost:4000'
+    : window.location.origin,
 
   // Max biometric retry attempts before lockout
   maxBiometricRetries: 3,
