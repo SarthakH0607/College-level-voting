@@ -18,9 +18,10 @@ try:
     from deepface import DeepFace
     DEEPFACE_AVAILABLE = True
     print("DeepFace library loaded successfully.")
-except ImportError:
+except Exception as e:
     DEEPFACE_AVAILABLE = False
-    print("WARNING: DeepFace not installed. Using stub mode.")
+    DEEPFACE_ERROR = str(e)
+    print(f"WARNING: DeepFace not installed. Using stub mode. Error: {DEEPFACE_ERROR}")
 
 
 class FaceVerifier:
@@ -116,7 +117,7 @@ class FaceVerifier:
 
         if not DEEPFACE_AVAILABLE:
             # Stub mode: return random low score (will fail threshold)
-            return {'verified': False, 'confidence': 0.0, 'error': 'Face AI not available.'}
+            return {'verified': False, 'confidence': 0.0, 'error': f'Face AI not available. Reason: {DEEPFACE_ERROR}'}
 
         try:
             # Save verification image to temp file
