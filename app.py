@@ -23,8 +23,14 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 CORS(app)
 
+import sys
+import os
+
+# Add biometric-service folder to Python path so imports still work
+sys.path.append(os.path.join(os.path.dirname(__file__), 'smartvote', 'biometric-service'))
+
 # ── Configuration ────────────────────────────────────────
-UPLOAD_DIR = os.path.join(os.path.dirname(__file__), 'data')
+UPLOAD_DIR = os.path.join(os.path.dirname(__file__), 'smartvote', 'biometric-service', 'data')
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(os.path.join(UPLOAD_DIR, 'faces'), exist_ok=True)
 os.makedirs(os.path.join(UPLOAD_DIR, 'voices'), exist_ok=True)

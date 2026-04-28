@@ -1,6 +1,6 @@
 @echo off
 echo Starting SmartVote Biometric Service...
-cd /d "%~dp0biometric-service"
+cd /d "%~dp0.."
 
 echo Installing core requirements...
 pip install flask flask-cors numpy opencv-python

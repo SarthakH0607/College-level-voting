@@ -110,6 +110,15 @@
           <button type="submit" class="btn btn-primary btn-block btn-lg" id="register-btn" style="margin-top:8px;">Create Account</button>
         </form>
 
+        <div class="divider" style="margin: 20px 0; text-align: center; color: var(--text-light); position: relative;">
+          <span style="background: var(--surface); padding: 0 10px; position: relative; z-index: 1;">or</span>
+          <div style="position: absolute; top: 50%; left: 0; right: 0; border-top: 1px solid var(--border); z-index: 0;"></div>
+        </div>
+
+        <button class="btn btn-google" id="google-register-btn" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; background: white; color: #333; border: 1px solid #ddd; padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background 0.3s;">
+          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" style="width: 20px; height: 20px;"> Continue with Google
+        </button>
+
         <p style="text-align:center; margin-top:20px; font-size:.9rem; color:var(--text-light);">
           Already have an account? <a href="login.html">Sign in</a>
         </p>
@@ -204,6 +213,60 @@
         else if (err.code === 'auth/weak-password') msg = 'Password too weak (min 6 chars).';
         Utils.showToast(msg, 'error');
         Utils.setLoading(btn, false, 'Create Account');
+      }
+    });
+
+    // Google Registration
+    document.getElementById('google-register-btn').addEventListener('click', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('google-register-btn');
+      Utils.setLoading(btn, true);
+
+      try {
+        const result = await auth.signInWithPopup(googleProvider);
+        const user = result.user;
+        const userDoc = await db.collection('users').doc(user.uid).get();
+
+        if (userDoc.exists) {
+          // User already exists, log them in
+          const role = userDoc.data().role;
+          Utils.showToast('Account exists. Logging you in...', 'success');
+          setTimeout(() => {
+            window.location.href = APP_CONFIG.roleDashboard[role] || 'index.html';
+          }, 600);
+        } else {
+          // Build user data grabbing optional form fields if they entered them before clicking Google
+          const userData = {
+            name: user.displayName || document.getElementById('name').value.trim() || '',
+            email: user.email,
+            photoURL: user.photoURL || '',
+            collegeId: document.getElementById('college-id').value.trim() || '',
+            role: selectedRole,
+            votedIn: [],
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          };
+
+          if (selectedRole === 'student') {
+            userData.class = document.getElementById('student-class').value.trim();
+            userData.semester = document.getElementById('semester').value;
+            userData.rollNumber = document.getElementById('roll-number').value.trim();
+          } else if (selectedRole === 'teacher') {
+            userData.department = document.getElementById('department').value.trim();
+            userData.employeeId = document.getElementById('employee-id').value.trim();
+            userData.designation = document.getElementById('designation').value;
+            userData.biometricEnrolled = false;
+          }
+
+          await db.collection('users').doc(user.uid).set(userData);
+          
+          Utils.showToast('Account created with Google!', 'success');
+          setTimeout(() => {
+            window.location.href = APP_CONFIG.roleDashboard[selectedRole] || 'index.html';
+          }, 800);
+        }
+      } catch (err) {
+        Utils.showToast('Google sign-up failed: ' + err.message, 'error');
+        Utils.setLoading(btn, false, '<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" style="width:20px;height:20px"> Continue with Google');
       }
     });
   </script>
