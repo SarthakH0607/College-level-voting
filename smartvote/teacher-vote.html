@@ -1,16 +1,19 @@
 <!DOCTYPE html>
 <html lang="en" data-role="teacher">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SmartVote — Teacher Vote (Biometric Verified)</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
+
 <body>
   <nav class="navbar">
     <a href="teacher-dashboard.html" class="logo"><span>🗳️</span> SmartVote</a>
     <div class="nav-right">
-      <a href="profile.html"><img src="https://ui-avatars.com/api/?name=T&background=7c3aed&color=fff&size=36" alt="Profile" class="nav-profile" id="nav-profile-img"></a>
+      <a href="profile.html"><img src="https://ui-avatars.com/api/?name=T&background=7c3aed&color=fff&size=36"
+          alt="Profile" class="nav-profile" id="nav-profile-img"></a>
       <a href="#" class="btn btn-ghost btn-sm logout-btn">Logout</a>
       <button id="hamburger-btn">☰</button>
     </div>
@@ -49,7 +52,8 @@
     <!-- Step 1: Face Verification -->
     <div class="card" id="face-section" style="max-width:600px; margin:0 auto 24px;">
       <h2 style="margin-bottom:16px;">📷 Face Recognition</h2>
-      <p style="color:var(--text-light); margin-bottom:16px;">Position your face in the camera frame and click "Scan Face".</p>
+      <p style="color:var(--text-light); margin-bottom:16px;">Position your face in the camera frame and click "Scan
+        Face".</p>
       <video id="face-video" class="camera-preview" autoplay playsinline></video>
       <canvas id="face-canvas" style="display:none;"></canvas>
       <div class="bio-status scanning" id="face-status" style="display:none;">🔄 Scanning face...</div>
@@ -64,7 +68,9 @@
     <div class="card" id="voice-section" style="max-width:600px; margin:0 auto 24px; display:none;">
       <h2 style="margin-bottom:16px;">🎙️ Voice Recognition</h2>
       <p style="color:var(--text-light); margin-bottom:8px;">Please say the following passphrase clearly:</p>
-      <div style="background:var(--bg); padding:16px; border-radius:var(--radius-sm); text-align:center; font-size:1.2rem; font-weight:700; margin:16px 0; color:var(--accent);" id="passphrase-display">—</div>
+      <div
+        style="background:var(--bg); padding:16px; border-radius:var(--radius-sm); text-align:center; font-size:1.2rem; font-weight:700; margin:16px 0; color:var(--accent);"
+        id="passphrase-display">—</div>
       <div class="audio-wave" id="audio-wave" style="display:none;">
         <span></span><span></span><span></span><span></span><span></span>
       </div>
@@ -92,7 +98,8 @@
     <div class="card" id="lockout-section" style="max-width:500px; margin:0 auto; display:none; text-align:center;">
       <div style="font-size:3rem; margin-bottom:12px;">🔒</div>
       <h2 style="color:var(--error);">Verification Failed</h2>
-      <p style="color:var(--text-light); margin-top:8px;">Maximum attempts exceeded. Please contact your administrator to reset biometric verification.</p>
+      <p style="color:var(--text-light); margin-top:8px;">Maximum attempts exceeded. Please contact your administrator
+        to reset biometric verification.</p>
       <a href="teacher-dashboard.html" class="btn btn-outline" style="margin-top:16px;">← Back to Dashboard</a>
     </div>
   </main>
@@ -202,7 +209,7 @@
       const cameraActive = !!(videoStream && videoStream.active);
       const video = document.getElementById('face-video');
       const canvas = document.getElementById('face-canvas');
-      
+
       // Removed strict camera active check so you can verify without camera
       if (!video.videoWidth || !video.videoHeight) {
         // Skip drawing if video is empty, but we'll still proceed
@@ -211,7 +218,7 @@
         canvas.height = video.videoHeight;
         canvas.getContext('2d').drawImage(video, 0, 0);
       }
-      
+
       const imageData = canvas.toDataURL('image/jpeg', 0.8);
       const faceDetected = cameraActive;
 
@@ -318,7 +325,7 @@
         mediaRecorder.onstop = () => {
           clearInterval(energyCheck);
           audioCtx.close();
-          if (recognition) { try { recognition.stop(); } catch(e) {} }
+          if (recognition) { try { recognition.stop(); } catch (e) { } }
           stream.getTracks().forEach(t => t.stop());
           verifyVoice();
         };
@@ -437,4 +444,5 @@
     });
   </script>
 </body>
+
 </html>
