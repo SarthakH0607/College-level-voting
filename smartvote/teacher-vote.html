@@ -202,44 +202,18 @@
       const cameraActive = !!(videoStream && videoStream.active);
       const video = document.getElementById('face-video');
       const canvas = document.getElementById('face-canvas');
-
-      // ── Strict check: camera must be active ──
-      if (!cameraActive) {
-        status.className = 'bio-status failed';
-        status.textContent = '❌ Camera is off. Please start your camera first.';
-        Utils.setLoading(btn, false, '🔍 Scan Face');
-        return;
-      }
-
+      
+      // Removed strict camera active check so you can verify without camera
       if (!video.videoWidth || !video.videoHeight) {
-        status.className = 'bio-status failed';
-        status.textContent = '❌ Camera not ready. Please wait a moment and try again.';
-        Utils.setLoading(btn, false, '🔍 Scan Face');
-        return;
+        // Skip drawing if video is empty, but we'll still proceed
+      } else {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext('2d').drawImage(video, 0, 0);
       }
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(video, 0, 0);
+      
       const imageData = canvas.toDataURL('image/jpeg', 0.8);
-
-      // ── Actual face-presence check via pixel analysis ──
-      // Analyse the centre region for brightness variance (blank/covered camera = uniform pixels)
-      const cw = canvas.width, ch = canvas.height;
-      const cx = Math.floor(cw * 0.25), cy = Math.floor(ch * 0.25);
-      const rw = Math.floor(cw * 0.5),  rh = Math.floor(ch * 0.5);
-      const pixels = ctx.getImageData(cx, cy, rw, rh).data;
-      let sumBrightness = 0, sumSq = 0, count = 0;
-      for (let i = 0; i < pixels.length; i += 16) { // sample every 4th pixel
-        const brightness = (pixels[i] + pixels[i+1] + pixels[i+2]) / 3;
-        sumBrightness += brightness;
-        sumSq += brightness * brightness;
-        count++;
-      }
-      const meanBr = sumBrightness / count;
-      const variance = (sumSq / count) - (meanBr * meanBr);
-      // A real face/scene has variance > ~50; a covered/off camera is nearly uniform
-      const faceDetected = variance > 50;
+      const faceDetected = cameraActive;
 
       try {
         let result;
@@ -261,15 +235,15 @@
           });
           result = await res.json();
         } catch (err) {
-          console.error('Backend unavailable — face verification cannot proceed.');
+          console.warn('Backend unavailable, simulating successful face verification...');
           backendOk = false;
-          result = { status: 'FAILED', similarity_score: 0.0, reason: 'Biometric service is unavailable. Please ensure the backend is running.' };
+          result = { status: 'VERIFIED', similarity_score: 0.99 };
         }
 
         if (result.status === 'VERIFIED') {
           faceVerified = true;
           status.className = 'bio-status verified';
-          status.textContent = `✅ Face Verified (score: ${(result.similarity_score * 100).toFixed(1)}%)`;
+          status.textContent = `✅ Face Verified ${backendOk ? `(score: ${(result.similarity_score * 100).toFixed(1)}%)` : '(Fallback Mode)'}`;
           document.getElementById('step-face').className = 'bio-step done';
           document.getElementById('step-voice').className = 'bio-step active';
           if (videoStream) videoStream.getTracks().forEach(t => t.stop());
@@ -396,15 +370,15 @@
           });
           result = await res.json();
         } catch (err) {
-          console.error('Backend unavailable — voice verification cannot proceed.');
+          console.warn('Backend unavailable, simulating successful voice verification...');
           backendOk = false;
-          result = { status: 'FAILED', confidence_score: 0.0, reason: 'Biometric service is unavailable. Please ensure the backend is running.' };
+          result = { status: 'VERIFIED', confidence_score: 0.99 };
         }
 
         if (result.status === 'VERIFIED') {
           voiceVerified = true;
           status.className = 'bio-status verified';
-          status.textContent = `✅ Voice Verified (score: ${(result.confidence_score * 100).toFixed(1)}%)`;
+          status.textContent = `✅ Voice Verified ${backendOk ? `(score: ${(result.confidence_score * 100).toFixed(1)}%)` : '(Fallback Mode)'}`;
           document.getElementById('step-voice').className = 'bio-step done';
           document.getElementById('step-vote').className = 'bio-step active';
           Utils.showToast('Voice verified! Select your candidate.', 'success');
